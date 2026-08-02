@@ -29,7 +29,7 @@ describe('Blogs API (e2e)', () => {
         websiteUrl: 'https://example.com',
       };
 
-      const response = await request(app.getHttpServer() as unknown)
+      const response = await request(app.getHttpServer())
         .post('/blogs')
         .send(createBlogDto)
         .expect(201);
