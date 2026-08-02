@@ -1,17 +1,15 @@
 import { Module } from '@nestjs/common';
 import { BlogsService } from './blogs.service';
 import { BlogsController } from './blogs.controller';
-import { MongooseModule } from "@nestjs/mongoose";
-import { Blog, BlogSchema } from "./schema/blog.schema";
-import { BlogsRepository } from "./blogs.repository";
+import { MongooseModule } from '@nestjs/mongoose';
+import { Blog, BlogSchema } from './schema/blog.schema';
+import { BlogsRepository } from './blogs.repository';
 
-  @Module({
-    imports: [
-      MongooseModule.forFeature([{ name: Blog.name, schema: BlogSchema },
-      ]),
-    ],
-    controllers: [BlogsController],
-    providers: [BlogsService, BlogsRepository]
-  })
-
+@Module({
+  imports: [
+    MongooseModule.forFeature([{ name: Blog.name, schema: BlogSchema }]),
+  ],
+  controllers: [BlogsController],
+  providers: [BlogsService, BlogsRepository],
+})
 export class BlogsModule {}

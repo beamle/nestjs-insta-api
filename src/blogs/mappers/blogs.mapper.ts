@@ -1,5 +1,5 @@
-import { BlogDocument } from "../schema/blog.schema";
-import { BlogViewModel } from "../view-models/blog.view-model";
+import { BlogDocument } from '../schema/blog.schema';
+import { BlogViewModel } from '../view-models/blog.view-model';
 
 export class BlogMapper {
   static toViewModel(blog: BlogDocument): BlogViewModel {
