@@ -11,7 +11,8 @@ export class BlogsService {
   constructor(private readonly blogsRepository: BlogsRepository) {}
 
   async create(createBlogDto: CreateBlogDto) {
-    return await this.blogsRepository.create(createBlogDto)
+    const blog = await this.blogsRepository.create(createBlogDto);
+    return BlogMapper.toViewModel(blog);
   }
 
   async findAll(query: BlogsQueryDto) {
@@ -19,9 +20,9 @@ export class BlogsService {
       await this.blogsRepository.findAll(query);
 
     return {
-      pagesCount: Math.ceil(totalCount / query.pageSize),
-      page: query.pageNumber,
-      pageSize: query.pageSize,
+      pagesCount: totalCount > 0 ? Math.ceil(totalCount / query.pageSize) : 0,
+      page: Number(query.pageNumber),
+      pageSize: Number(query.pageSize),
       totalCount,
       items: items.map(BlogMapper.toViewModel),
     };

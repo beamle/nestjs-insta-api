@@ -64,7 +64,7 @@ export class BlogsRepository {
   }
 
   async update(id: string, updateBlogDto: UpdateBlogDto) {
-    return this.blogModel.findByIdAndUpdate(toObjectId(id), updateBlogDto).exec();
+    return this.blogModel.findByIdAndUpdate(toObjectId(id), updateBlogDto, { returnDocument: 'after' }).exec();
   }
 
   remove(id: string) {

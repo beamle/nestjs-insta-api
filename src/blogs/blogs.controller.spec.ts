@@ -15,7 +15,6 @@ describe('BlogsController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
 
-    // Bind global pipes so DTO validation runs during E2E tests
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
