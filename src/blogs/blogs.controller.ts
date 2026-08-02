@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { BlogsService } from './blogs.service';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
+import { BlogsQueryDto } from "./dto/get-all-blogs.dto";
 
 @Controller('blogs')
 export class BlogsController {
@@ -13,8 +14,8 @@ export class BlogsController {
   }
 
   @Get()
-  findAll() {
-    return this.blogsService.findAll();
+  findAll(@Query() query: BlogsQueryDto) {
+    return this.blogsService.findAll(query);
   }
 
   @Get(':id')
@@ -22,9 +23,13 @@ export class BlogsController {
     return this.blogsService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBlogDto: UpdateBlogDto) {
-    return this.blogsService.update(id, updateBlogDto);
+  @Put(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateBlogDto,
+  ): Promise<void> {
+    await this.blogsService.update(id, dto);
   }
 
   @Delete(':id')

@@ -4,6 +4,8 @@ import { UpdateBlogDto } from './dto/update-blog.dto';
 import { Model } from "mongoose";
 import { Blog, BlogDocument } from "./schema/blog.schema";
 import { InjectModel } from "@nestjs/mongoose";
+import { toObjectId } from "../helpers/helpers";
+import { BlogsQueryDto } from "./dto/get-all-blogs.dto";
 
 @Injectable()
 export class BlogsRepository {
@@ -23,19 +25,49 @@ export class BlogsRepository {
     return await blog.save();
   }
 
-  async findAll() {
-    return this.blogModel.find();
+  async findAll(query: BlogsQueryDto) {
+    const {
+      searchNameTerm,
+      sortBy,
+      sortDirection,
+      pageNumber,
+      pageSize,
+    } = query;
+
+    const filter = searchNameTerm
+      ? {
+        name: {
+          $regex: searchNameTerm,
+          $options: 'i',
+        },
+      }
+      : {};
+
+    const totalCount = await this.blogModel.countDocuments(filter);
+
+    const items = await this.blogModel
+      .find(filter)
+      .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
+      .skip((pageNumber - 1) * pageSize)
+      .limit(pageSize)
+      .lean()
+      .exec();
+
+    return {
+      items,
+      totalCount,
+    };
   }
 
-  findOne(id: string) {
-    return this.blogModel.findById(id);
+  async findOne(id: string) {
+    return this.blogModel.findById(toObjectId(id)).exec();
   }
 
-  update(id: string, updateBlogDto: UpdateBlogDto) {
-    return `This action updates a #${id} blog`;
+  async update(id: string, updateBlogDto: UpdateBlogDto) {
+    return this.blogModel.findByIdAndUpdate(toObjectId(id), updateBlogDto).exec();
   }
 
   remove(id: string) {
-    return this.blogModel.deleteOne({id})
+    return this.blogModel.deleteOne({ _id: toObjectId(id) }).exec()
   }
 }
