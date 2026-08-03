@@ -34,34 +34,40 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Setup pnpm
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
       # Setup Node.js
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
+          cache: 'pnpm'
 
       # Install dependencies
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       # Lint code
       - name: Run ESLint
-        run: npm run lint
+        run: pnpm run lint
         continue-on-error: false
 
       # Build project
       - name: Build project
-        run: npm run build
+        run: pnpm run build
 
       # Run unit tests
       - name: Run unit tests
-        run: npm run test -- src/blogs/blogs.controller.unit.spec.ts
+        run: pnpm run test -- src/blogs/blogs.controller.unit.spec.ts
         continue-on-error: false
 
       # Run e2e tests
       - name: Run e2e tests
-        run: npm run test:e2e
+        run: pnpm run test:e2e
         env:
           MONGODB_URI: mongodb://localhost:27017/nest
         continue-on-error: false
@@ -69,7 +75,7 @@ jobs:
       # Upload coverage reports
       - name: Generate coverage report
         if: always()
-        run: npm run test:cov
+        run: pnpm run test:cov
         continue-on-error: true
 
       # Upload to codecov

@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, 
 import { BlogsService } from './blogs.service';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
-import { BlogsQueryDto } from "./dto/get-all-blogs.dto";
+import { BlogsQueryDto } from './dto/get-all-blogs.dto';
 
 @Controller('blogs')
 export class BlogsController {

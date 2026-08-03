@@ -8,7 +8,6 @@ import { NotFoundException } from '@nestjs/common';
 
 describe('BlogsController (Unit)', () => {
   let controller: BlogsController;
-  let service: BlogsService;
 
   const mockBlogViewModel = {
     id: '507f1f77bcf86cd799439011',
@@ -39,7 +38,6 @@ describe('BlogsController (Unit)', () => {
     }).compile();
 
     controller = module.get<BlogsController>(BlogsController);
-    service = module.get<BlogsService>(BlogsService);
 
     jest.clearAllMocks();
   });
@@ -61,8 +59,8 @@ describe('BlogsController (Unit)', () => {
       const result = await controller.create(createBlogDto);
 
       expect(result).toEqual(mockBlogViewModel);
-      expect(service.create).toHaveBeenCalledWith(createBlogDto);
-      expect(service.create).toHaveBeenCalledTimes(1);
+      expect(mockBlogsService.create).toHaveBeenCalledWith(createBlogDto);
+      expect(mockBlogsService.create).toHaveBeenCalledTimes(1);
     });
 
     it('should propagate service errors when creating a blog', async () => {
@@ -102,8 +100,8 @@ describe('BlogsController (Unit)', () => {
       const result = await controller.findAll(query);
 
       expect(result).toEqual(expectedResult);
-      expect(service.findAll).toHaveBeenCalledWith(query);
-      expect(service.findAll).toHaveBeenCalledTimes(1);
+      expect(mockBlogsService.findAll).toHaveBeenCalledWith(query);
+      expect(mockBlogsService.findAll).toHaveBeenCalledTimes(1);
     });
 
     it('should handle search term in query', async () => {
@@ -128,7 +126,7 @@ describe('BlogsController (Unit)', () => {
       const result = await controller.findAll(query);
 
       expect(result).toEqual(expectedResult);
-      expect(service.findAll).toHaveBeenCalledWith(query);
+      expect(mockBlogsService.findAll).toHaveBeenCalledWith(query);
     });
 
     it('should handle different sorting directions', async () => {
@@ -153,7 +151,7 @@ describe('BlogsController (Unit)', () => {
       const result = await controller.findAll(queryAsc);
 
       expect(result).toEqual(expectedResult);
-      expect(service.findAll).toHaveBeenCalledWith(queryAsc);
+      expect(mockBlogsService.findAll).toHaveBeenCalledWith(queryAsc);
     });
 
     it('should handle pagination correctly on page 2', async () => {
@@ -178,7 +176,7 @@ describe('BlogsController (Unit)', () => {
       const result = await controller.findAll(query);
 
       expect(result).toEqual(expectedResult);
-      expect(service.findAll).toHaveBeenCalledWith(query);
+      expect(mockBlogsService.findAll).toHaveBeenCalledWith(query);
     });
 
     it('should return empty items when no blogs match the search', async () => {
@@ -216,8 +214,8 @@ describe('BlogsController (Unit)', () => {
       const result = await controller.findOne(blogId);
 
       expect(result).toEqual(mockBlogViewModel);
-      expect(service.findOne).toHaveBeenCalledWith(blogId);
-      expect(service.findOne).toHaveBeenCalledTimes(1);
+      expect(mockBlogsService.findOne).toHaveBeenCalledWith(blogId);
+      expect(mockBlogsService.findOne).toHaveBeenCalledTimes(1);
     });
 
     it('should throw NotFoundException when blog is not found', async () => {
@@ -227,8 +225,10 @@ describe('BlogsController (Unit)', () => {
         new NotFoundException(`No such blog with id: ${blogId}`),
       );
 
-      await expect(controller.findOne(blogId)).rejects.toThrow(NotFoundException);
-      expect(service.findOne).toHaveBeenCalledWith(blogId);
+      await expect(controller.findOne(blogId)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(mockBlogsService.findOne).toHaveBeenCalledWith(blogId);
     });
 
     it('should handle various valid MongoDB IDs', async () => {
@@ -244,7 +244,7 @@ describe('BlogsController (Unit)', () => {
         const result = await controller.findOne(id);
 
         expect(result).toEqual(mockBlogViewModel);
-        expect(service.findOne).toHaveBeenCalledWith(id);
+        expect(mockBlogsService.findOne).toHaveBeenCalledWith(id);
       }
     });
   });
@@ -263,8 +263,11 @@ describe('BlogsController (Unit)', () => {
       const result = await controller.update(blogId, updateBlogDto);
 
       expect(result).toBeUndefined();
-      expect(service.update).toHaveBeenCalledWith(blogId, updateBlogDto);
-      expect(service.update).toHaveBeenCalledTimes(1);
+      expect(mockBlogsService.update).toHaveBeenCalledWith(
+        blogId,
+        updateBlogDto,
+      );
+      expect(mockBlogsService.update).toHaveBeenCalledTimes(1);
     });
 
     it('should allow partial updates with only name', async () => {
@@ -277,7 +280,10 @@ describe('BlogsController (Unit)', () => {
 
       await controller.update(blogId, updateBlogDto);
 
-      expect(service.update).toHaveBeenCalledWith(blogId, updateBlogDto);
+      expect(mockBlogsService.update).toHaveBeenCalledWith(
+        blogId,
+        updateBlogDto,
+      );
     });
 
     it('should allow partial updates with only description', async () => {
@@ -290,7 +296,10 @@ describe('BlogsController (Unit)', () => {
 
       await controller.update(blogId, updateBlogDto);
 
-      expect(service.update).toHaveBeenCalledWith(blogId, updateBlogDto);
+      expect(mockBlogsService.update).toHaveBeenCalledWith(
+        blogId,
+        updateBlogDto,
+      );
     });
 
     it('should allow partial updates with only websiteUrl', async () => {
@@ -303,7 +312,10 @@ describe('BlogsController (Unit)', () => {
 
       await controller.update(blogId, updateBlogDto);
 
-      expect(service.update).toHaveBeenCalledWith(blogId, updateBlogDto);
+      expect(mockBlogsService.update).toHaveBeenCalledWith(
+        blogId,
+        updateBlogDto,
+      );
     });
 
     it('should throw NotFoundException when updating non-existent blog', async () => {
@@ -316,8 +328,13 @@ describe('BlogsController (Unit)', () => {
         new NotFoundException(`No such blog with id: ${blogId}`),
       );
 
-      await expect(controller.update(blogId, updateBlogDto)).rejects.toThrow(NotFoundException);
-      expect(service.update).toHaveBeenCalledWith(blogId, updateBlogDto);
+      await expect(controller.update(blogId, updateBlogDto)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(mockBlogsService.update).toHaveBeenCalledWith(
+        blogId,
+        updateBlogDto,
+      );
     });
 
     it('should return HTTP 204 No Content on successful update', async () => {
@@ -343,8 +360,8 @@ describe('BlogsController (Unit)', () => {
       const result = await controller.remove(blogId);
 
       expect(result).toBeUndefined();
-      expect(service.remove).toHaveBeenCalledWith(blogId);
-      expect(service.remove).toHaveBeenCalledTimes(1);
+      expect(mockBlogsService.remove).toHaveBeenCalledWith(blogId);
+      expect(mockBlogsService.remove).toHaveBeenCalledTimes(1);
     });
 
     it('should throw NotFoundException when removing non-existent blog', async () => {
@@ -354,8 +371,10 @@ describe('BlogsController (Unit)', () => {
         new NotFoundException(`No such blog with id: ${blogId}`),
       );
 
-      await expect(controller.remove(blogId)).rejects.toThrow(NotFoundException);
-      expect(service.remove).toHaveBeenCalledWith(blogId);
+      await expect(controller.remove(blogId)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(mockBlogsService.remove).toHaveBeenCalledWith(blogId);
     });
 
     it('should handle deletion of multiple different blogs', async () => {
@@ -370,10 +389,10 @@ describe('BlogsController (Unit)', () => {
       for (const id of blogIds) {
         const result = await controller.remove(id);
         expect(result).toBeUndefined();
-        expect(service.remove).toHaveBeenCalledWith(id);
+        expect(mockBlogsService.remove).toHaveBeenCalledWith(id);
       }
 
-      expect(service.remove).toHaveBeenCalledTimes(3);
+      expect(mockBlogsService.remove).toHaveBeenCalledTimes(3);
     });
 
     it('should return HTTP 204 No Content on successful deletion', async () => {

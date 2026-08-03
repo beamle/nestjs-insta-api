@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
-import { Model } from "mongoose";
-import { Blog, BlogDocument } from "./schema/blog.schema";
-import { InjectModel } from "@nestjs/mongoose";
-import { toObjectId } from "../helpers/helpers";
-import { BlogsQueryDto } from "./dto/get-all-blogs.dto";
+import { Model } from 'mongoose';
+import { Blog, BlogDocument } from './schema/blog.schema';
+import { InjectModel } from '@nestjs/mongoose';
+import { toObjectId } from '../helpers/helpers';
+import { BlogsQueryDto } from './dto/get-all-blogs.dto';
 
 @Injectable()
 export class BlogsRepository {
@@ -13,7 +13,6 @@ export class BlogsRepository {
     @InjectModel(Blog.name)
     private readonly blogModel: Model<BlogDocument>,
   ) {}
-
 
   async create(createBlogDto: CreateBlogDto) {
     const blog = new this.blogModel({
@@ -26,13 +25,8 @@ export class BlogsRepository {
   }
 
   async findAll(query: BlogsQueryDto) {
-    const {
-      searchNameTerm,
-      sortBy,
-      sortDirection,
-      pageNumber,
-      pageSize,
-    } = query;
+    const { searchNameTerm, sortBy, sortDirection, pageNumber, pageSize } =
+      query;
 
     const filter = searchNameTerm
       ? {
@@ -64,10 +58,14 @@ export class BlogsRepository {
   }
 
   async update(id: string, updateBlogDto: UpdateBlogDto) {
-    return this.blogModel.findByIdAndUpdate(toObjectId(id), updateBlogDto, { returnDocument: 'after' }).exec();
+    return this.blogModel
+      .findByIdAndUpdate(toObjectId(id), updateBlogDto, {
+        returnDocument: 'after',
+      })
+      .exec();
   }
 
   remove(id: string) {
-    return this.blogModel.deleteOne({ _id: toObjectId(id) }).exec()
+    return this.blogModel.deleteOne({ _id: toObjectId(id) }).exec();
   }
 }

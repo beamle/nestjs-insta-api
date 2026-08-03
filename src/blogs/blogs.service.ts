@@ -1,10 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
-import { BlogsRepository } from "./blogs.repository";
-import { BlogsQueryDto } from "./dto/get-all-blogs.dto";
-import { BlogDocument } from "./schema/blog.schema";
-import { BlogMapper } from "./mappers/blogs.mapper";
+import { BlogsRepository } from './blogs.repository';
+import { BlogsQueryDto } from './dto/get-all-blogs.dto';
+import { BlogMapper } from './mappers/blogs.mapper';
 
 @Injectable()
 export class BlogsService {
@@ -16,27 +15,27 @@ export class BlogsService {
   }
 
   async findAll(query: BlogsQueryDto) {
-    const { items, totalCount } =
-      await this.blogsRepository.findAll(query);
+    const { items, totalCount } = await this.blogsRepository.findAll(query);
 
     return {
       pagesCount: totalCount > 0 ? Math.ceil(totalCount / query.pageSize) : 0,
       page: Number(query.pageNumber),
       pageSize: Number(query.pageSize),
       totalCount,
-      items: items.map(BlogMapper.toViewModel),
+      items: items.map((item) => BlogMapper.toViewModel(item)),
     };
   }
 
   async findOne(id: string) {
-    const blog = await this.blogsRepository.findOne(id)
+    const blog = await this.blogsRepository.findOne(id);
     if (!blog) throw new NotFoundException(`No such blog with id: ${id}`);
     return BlogMapper.toViewModel(blog);
   }
 
   async update(id: string, updateBlogDto: UpdateBlogDto) {
     const updatedBlog = await this.blogsRepository.update(id, updateBlogDto);
-    if (!updatedBlog) throw new NotFoundException(`No such blog with id: ${id}`);
+    if (!updatedBlog)
+      throw new NotFoundException(`No such blog with id: ${id}`);
     return updatedBlog;
   }
 
@@ -47,16 +46,4 @@ export class BlogsService {
       throw new NotFoundException(`No such blog with id: ${id}`);
     }
   }
-
-  private mapToViewModel(blog: BlogDocument) {
-    return {
-      id: blog._id.toString(),
-      name: blog.name,
-      description: blog.description,
-      websiteUrl: blog.websiteUrl,
-      createdAt: blog.createdAt,
-      isMembership: blog.isMembership,
-    };
-  }
-
 }

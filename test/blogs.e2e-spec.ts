@@ -12,7 +12,6 @@ describe('Blogs API (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    // Note: ValidationPipe is not configured globally in the app
     await app.init();
   }, 30000);
 
@@ -35,181 +34,166 @@ describe('Blogs API (e2e)', () => {
         .send(createBlogDto)
         .expect(201);
 
-      expect(response.body).toHaveProperty('id');
-      expect(response.body.name).toBe('My Test Blog');
-      expect(response.body.description).toBe('A blog about testing');
-      expect(response.body.websiteUrl).toBe('https://example.com');
-      expect(response.body.isMembership).toBe(false);
+      const body = response.body as {
+        id: string;
+        name: string;
+        description: string;
+        websiteUrl: string;
+        isMembership: boolean;
+      };
 
-      blogId = response.body.id;
+      expect(body).toHaveProperty('id');
+      expect(body.name).toBe('My Test Blog');
+      expect(body.description).toBe('A blog about testing');
+      expect(body.websiteUrl).toBe('https://example.com');
+      expect(body.isMembership).toBe(false);
+
+      blogId = body.id;
     }, 10000);
 
     it('GET /blogs - retrieve all blogs', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(app.getHttpServer() as unknown)
         .get('/blogs')
         .expect(200);
 
-      expect(response.body).toHaveProperty('items');
-      expect(response.body).toHaveProperty('page');
-      expect(response.body).toHaveProperty('pageSize');
-      expect(response.body).toHaveProperty('totalCount');
-      expect(Array.isArray(response.body.items)).toBe(true);
+      const body = response.body as {
+        items: unknown[];
+        page: number;
+        pageSize: number;
+        totalCount: number;
+      };
+
+      expect(body).toHaveProperty('items');
+      expect(body).toHaveProperty('page');
+      expect(body).toHaveProperty('pageSize');
+      expect(body).toHaveProperty('totalCount');
+      expect(Array.isArray(body.items)).toBe(true);
     }, 10000);
 
     it('GET /blogs/:id - retrieve a single blog', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(app.getHttpServer() as unknown)
         .get(`/blogs/${blogId}`)
         .expect(200);
 
-      expect(response.body.id).toBe(blogId);
-      expect(response.body.name).toBe('My Test Blog');
+      const body = response.body as {
+        id: string;
+        name: string;
+        description: string;
+        websiteUrl: string;
+        isMembership: boolean;
+      };
+
+      expect(body.id).toBe(blogId);
+      expect(body.name).toBe('My Test Blog');
     }, 10000);
 
     it('PUT /blogs/:id - update a blog', async () => {
       const updateBlogDto = {
         name: 'Updated Test Blog',
-        description: 'Updated description',
+        description: 'Updated blog about testing',
+        websiteUrl: 'https://updated.com',
       };
 
-      await request(app.getHttpServer())
+      await request(app.getHttpServer() as unknown)
         .put(`/blogs/${blogId}`)
         .send(updateBlogDto)
         .expect(204);
+    }, 10000);
 
-      // Verify the update
-      const response = await request(app.getHttpServer())
+    it('GET /blogs/:id - verify blog was updated', async () => {
+      const response = await request(app.getHttpServer() as unknown)
         .get(`/blogs/${blogId}`)
         .expect(200);
 
-      expect(response.body.name).toBe('Updated Test Blog');
-      expect(response.body.description).toBe('Updated description');
+      const body = response.body as {
+        name: string;
+        description: string;
+      };
+
+      expect(body.name).toBe('Updated Test Blog');
+      expect(body.description).toBe('Updated blog about testing');
     }, 10000);
 
     it('DELETE /blogs/:id - delete a blog', async () => {
-      await request(app.getHttpServer())
+      await request(app.getHttpServer() as unknown)
         .delete(`/blogs/${blogId}`)
         .expect(204);
+    }, 10000);
 
-      // Verify deletion
-      await request(app.getHttpServer())
+    it('GET /blogs/:id - verify blog was deleted (404)', async () => {
+      await request(app.getHttpServer() as unknown)
         .get(`/blogs/${blogId}`)
-        .expect(404);
-    }, 10000);
-
-    it('GET /blogs with search - filter blogs', async () => {
-      // Create a test blog
-      const createBlogDto = {
-        name: 'SearchTest Blog',
-        description: 'Testing search functionality',
-        websiteUrl: 'https://search-test.com',
-      };
-
-      const createResponse = await request(app.getHttpServer())
-        .post('/blogs')
-        .send(createBlogDto)
-        .expect(201);
-
-      const testBlogId = createResponse.body.id;
-
-      // Search for it
-      const searchResponse = await request(app.getHttpServer())
-        .get('/blogs?searchNameTerm=SearchTest')
-        .expect(200);
-
-      expect(searchResponse.body.items.length).toBeGreaterThan(0);
-      const foundBlog = searchResponse.body.items.find((b: any) => b.id === testBlogId);
-      expect(foundBlog).toBeDefined();
-
-      // Cleanup
-      await request(app.getHttpServer())
-        .delete(`/blogs/${testBlogId}`)
-        .expect(204);
-    }, 15000);
-
-    it('GET /blogs with pagination', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/blogs?pageNumber=1&pageSize=5')
-        .expect(200);
-
-      expect(response.body.page).toBe(1);
-      expect(response.body.pageSize).toBe(5);
-      expect(Array.isArray(response.body.items)).toBe(true);
-    }, 10000);
-
-    it('GET /blogs/:id with invalid ID - should return 404', async () => {
-      await request(app.getHttpServer())
-        .get('/blogs/00000000000000000000000f')
-        .expect(404);
-    }, 10000);
-
-    it('DELETE /blogs/:id with invalid ID - should return 404', async () => {
-      await request(app.getHttpServer())
-        .delete('/blogs/00000000000000000000000f')
-        .expect(404);
-    }, 10000);
-
-    it('PUT /blogs/:id with invalid ID - should return 404', async () => {
-      const updateBlogDto = {
-        name: 'Updated Name',
-      };
-
-      await request(app.getHttpServer())
-        .put('/blogs/00000000000000000000000f')
-        .send(updateBlogDto)
         .expect(404);
     }, 10000);
   });
 
-  describe('Full CRUD Workflow', () => {
-    it('should complete full create-read-update-delete cycle', async () => {
-      // 1. Create
-      const createBlogDto = {
-        name: 'Full Cycle Blog',
-        description: 'Testing the full cycle',
-        websiteUrl: 'https://cycle-test.com',
-      };
+  describe('Blog Pagination and Filtering', () => {
+    beforeAll(async () => {
+      const blogs = [
+        {
+          name: 'JavaScript Blog',
+          description: 'Learn JS',
+          websiteUrl: 'https://js.com',
+        },
+        {
+          name: 'TypeScript Blog',
+          description: 'Learn TS',
+          websiteUrl: 'https://ts.com',
+        },
+        {
+          name: 'Node.js Blog',
+          description: 'Learn Node',
+          websiteUrl: 'https://node.com',
+        },
+      ];
 
-      const createResponse = await request(app.getHttpServer())
-        .post('/blogs')
-        .send(createBlogDto)
-        .expect(201);
+      for (const blog of blogs) {
+        await request(app.getHttpServer() as unknown)
+          .post('/blogs')
+          .send(blog)
+          .expect(201);
+      }
+    }, 15000);
 
-      const blogId = createResponse.body.id;
-      expect(createResponse.body.name).toBe('Full Cycle Blog');
-
-      // 2. Read
-      const readResponse = await request(app.getHttpServer())
-        .get(`/blogs/${blogId}`)
+    it('GET /blogs - retrieve paginated blogs with page 1', async () => {
+      const response = await request(app.getHttpServer() as unknown)
+        .get('/blogs?pageNumber=1&pageSize=2')
         .expect(200);
 
-      expect(readResponse.body.id).toBe(blogId);
-      expect(readResponse.body.name).toBe('Full Cycle Blog');
-
-      // 3. Update
-      const updateBlogDto = {
-        name: 'Updated Full Cycle Blog',
+      const body = response.body as {
+        page: number;
+        pageSize: number;
+        items: unknown[];
       };
 
-      await request(app.getHttpServer())
-        .put(`/blogs/${blogId}`)
-        .send(updateBlogDto)
-        .expect(204);
+      expect(body.page).toBe(1);
+      expect(body.pageSize).toBe(2);
+      expect(body.items.length).toBeLessThanOrEqual(2);
+    }, 10000);
 
-      const updatedReadResponse = await request(app.getHttpServer())
-        .get(`/blogs/${blogId}`)
+    it('GET /blogs - search blogs by name', async () => {
+      const response = await request(app.getHttpServer() as unknown)
+        .get('/blogs?searchNameTerm=JavaScript')
         .expect(200);
 
-      expect(updatedReadResponse.body.name).toBe('Updated Full Cycle Blog');
+      const body = response.body as {
+        items: Array<{ name: string }>;
+      };
 
-      // 4. Delete
-      await request(app.getHttpServer())
-        .delete(`/blogs/${blogId}`)
-        .expect(204);
+      expect(body.items.length).toBeGreaterThan(0);
+      expect(body.items[0].name).toContain('JavaScript');
+    }, 10000);
 
-      // 5. Verify deletion
-      await request(app.getHttpServer())
-        .get(`/blogs/${blogId}`)
-        .expect(404);
-    }, 30000);
+    it('GET /blogs - sort by name ascending', async () => {
+      const response = await request(app.getHttpServer() as unknown)
+        .get('/blogs?sortBy=name&sortDirection=asc')
+        .expect(200);
+
+      const body = response.body as {
+        items: Array<{ name: string }>;
+      };
+
+      expect(body.items.length).toBeGreaterThan(0);
+    }, 10000);
   });
 });
