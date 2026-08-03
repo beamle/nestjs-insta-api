@@ -14,6 +14,7 @@ import { BlogsPostsController } from './blogs-posts.controller';
   ],
   controllers: [PostsController, BlogsPostsController],
   providers: [PostsService, PostsRepository],
+  exports: [PostsRepository],
 })
 export class PostsModule {
 }
