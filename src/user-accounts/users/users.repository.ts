@@ -44,10 +44,7 @@ export class UsersRepository {
       });
     }
 
-    const filter: { $and?: UserSearchFilter[] } = {};
-    if (filterParts.length > 0) {
-      filter.$and = filterParts;
-    }
+    const filter = filterParts.length > 0 ? { $or: filterParts } : {};
     const totalCount = await this.userModel.countDocuments(filter);
     const items = await this.userModel
       .find(filter)

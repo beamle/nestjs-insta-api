@@ -20,7 +20,7 @@ export class UsersController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id') id: string): Promise<void> {
-    await this.usersService.remove(id);
+  remove(@Param('id') id: string): Promise<void> {
+    return this.usersService.remove(id);
   }
 }
