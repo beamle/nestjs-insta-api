@@ -4,7 +4,8 @@ import { Model } from 'mongoose';
 import { Post, PostDocument } from './schema/post.schema';
 import { CreatePostDto } from './dto/create-post.dto';
 import { GetAllPostsDto } from './dto/get-all-posts.dto';
-import { toObjectId } from '../helpers/helpers';
+import { UpdatePostDto } from './dto/update-post.dto';
+import { toObjectId } from '../../helpers/helpers';
 
 @Injectable()
 export class PostsRepository {
@@ -32,12 +33,14 @@ export class PostsRepository {
   async findAll(query: GetAllPostsDto, blogId?: string) {
     const pageNumber = Number(query.pageNumber ?? 1);
     const pageSize = Number(query.pageSize ?? 10);
+    const sortBy = query.sortBy ?? 'createdAt';
+    const sortDirection = query.sortDirection ?? 'desc';
     const filter = blogId ? { blogId } : {};
 
     const totalCount = await this.postModel.countDocuments(filter);
     const items = await this.postModel
       .find(filter)
-      .sort({ createdAt: -1 })
+      .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
       .skip((pageNumber - 1) * pageSize)
       .limit(pageSize)
       .lean()
@@ -51,5 +54,17 @@ export class PostsRepository {
 
   async findOne(id: string) {
     return this.postModel.findById(toObjectId(id)).exec();
+  }
+
+  async update(id: string, updatePostDto: UpdatePostDto) {
+    return this.postModel
+      .findByIdAndUpdate(toObjectId(id), updatePostDto, {
+        returnDocument: 'after',
+      })
+      .exec();
+  }
+
+  remove(id: string) {
+    return this.postModel.deleteOne({ _id: toObjectId(id) }).exec();
   }
 }

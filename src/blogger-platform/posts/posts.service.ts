@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { CreatePostForBlogDto } from './dto/create-post-for-blog.dto';
 import { GetAllPostsDto } from './dto/get-all-posts.dto';
+import { UpdatePostDto } from './dto/update-post.dto';
 import { PostsRepository } from './posts.repository';
 import { BlogsRepository } from '../blogs/blogs.repository';
 import { PostsMapper } from './mappers/posts.mapper';
@@ -38,6 +39,8 @@ export class PostsService {
     const pageNumber = Number(query.pageNumber ?? 1);
     const pageSize = Number(query.pageSize ?? 10);
     const { items, totalCount } = await this.postsRepository.findAll({
+      sortBy: query.sortBy ?? 'createdAt',
+      sortDirection: query.sortDirection ?? 'desc',
       pageNumber,
       pageSize,
     });
@@ -72,6 +75,8 @@ export class PostsService {
     const pageSize = Number(query.pageSize ?? 10);
     const { items, totalCount } = await this.postsRepository.findAll(
       {
+        sortBy: query.sortBy ?? 'createdAt',
+        sortDirection: query.sortDirection ?? 'desc',
         pageNumber,
         pageSize,
       },
@@ -85,5 +90,21 @@ export class PostsService {
       totalCount,
       items: items.map((item) => PostsMapper.toViewModel(item)),
     };
+  }
+
+  async update(id: string, updatePostDto: UpdatePostDto) {
+    const updatedPost = await this.postsRepository.update(id, updatePostDto);
+
+    if (!updatedPost) {
+      throw new NotFoundException(`No such post with id: ${id}`);
+    }
+  }
+
+  async remove(id: string) {
+    const result = await this.postsRepository.remove(id);
+
+    if (result.deletedCount === 0) {
+      throw new NotFoundException(`No such post with id: ${id}`);
+    }
   }
 }

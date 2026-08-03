@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { User, UserDocument } from './schema/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { GetAllUsersDto } from './dto/get-all-users.dto';
-import { toObjectId } from '../helpers/helpers';
+import { toObjectId } from '../../helpers/helpers';
 
 @Injectable()
 export class UsersRepository {
@@ -26,6 +26,8 @@ export class UsersRepository {
   async findAll(query: GetAllUsersDto) {
     const pageNumber = Number(query.pageNumber ?? 1);
     const pageSize = Number(query.pageSize ?? 10);
+    const sortBy = query.sortBy ?? 'createdAt';
+    const sortDirection = query.sortDirection ?? 'desc';
     type UserSearchFilter = {
       login?: { $regex: string; $options: 'i' };
       email?: { $regex: string; $options: 'i' };
@@ -52,7 +54,7 @@ export class UsersRepository {
     const totalCount = await this.userModel.countDocuments(filter);
     const items = await this.userModel
       .find(filter)
-      .sort({ [query.sortBy]: query.sortDirection === 'asc' ? 1 : -1 })
+      .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
       .skip((pageNumber - 1) * pageSize)
       .limit(pageSize)
       .lean()

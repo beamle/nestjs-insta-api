@@ -3,7 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app/app.module';
-import { CommentsRepository } from '../src/comments/comments.repository';
+import { CommentsRepository } from '../src/blogger-platform/comments/comments.repository';
 
 describe('Testing API (e2e)', () => {
   let app: INestApplication;

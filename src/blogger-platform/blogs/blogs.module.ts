@@ -13,4 +13,5 @@ import { BlogsRepository } from './blogs.repository';
   providers: [BlogsService, BlogsRepository],
   exports: [BlogsRepository],
 })
-export class BlogsModule {}
+export class BlogsModule {
+}

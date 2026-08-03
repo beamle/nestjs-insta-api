@@ -6,7 +6,8 @@ import { BlogsQueryDto } from './dto/get-all-blogs.dto';
 
 @Controller('blogs')
 export class BlogsController {
-  constructor(private readonly blogsService: BlogsService) {}
+  constructor(private readonly blogsService: BlogsService) {
+  }
 
   @Post()
   create(@Body() createBlogDto: CreateBlogDto) {

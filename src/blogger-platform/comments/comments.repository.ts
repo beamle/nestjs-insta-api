@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { Comment, CommentDocument } from './schema/comment.schema';
 import { GetAllCommentsDto } from './dto/get-all-comments.dto';
-import { toObjectId } from '../helpers/helpers';
+import { toObjectId } from '../../helpers/helpers';
 
 @Injectable()
 export class CommentsRepository {
