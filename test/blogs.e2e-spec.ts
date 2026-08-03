@@ -1,10 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
+import { App } from 'supertest/types';
 import { AppModule } from '../src/app/app.module';
 
 describe('Blogs API (e2e)', () => {
   let app: INestApplication;
+
+  const httpServer = () => app.getHttpServer() as unknown as App;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -13,9 +16,11 @@ describe('Blogs API (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     await app.init();
+    await request(httpServer()).delete('/testing/all-data').expect(204);
   }, 30000);
 
   afterAll(async () => {
+    await request(httpServer()).delete('/testing/all-data').expect(204);
     await app.close();
   }, 10000);
 
@@ -29,7 +34,7 @@ describe('Blogs API (e2e)', () => {
         websiteUrl: 'https://example.com',
       };
 
-      const response = await request(app.getHttpServer())
+      const response = await request(httpServer())
         .post('/blogs')
         .send(createBlogDto)
         .expect(201);
@@ -52,9 +57,7 @@ describe('Blogs API (e2e)', () => {
     }, 10000);
 
     it('GET /blogs - retrieve all blogs', async () => {
-      const response = await request(app.getHttpServer() as unknown)
-        .get('/blogs')
-        .expect(200);
+      const response = await request(httpServer()).get('/blogs').expect(200);
 
       const body = response.body as {
         items: unknown[];
@@ -71,7 +74,7 @@ describe('Blogs API (e2e)', () => {
     }, 10000);
 
     it('GET /blogs/:id - retrieve a single blog', async () => {
-      const response = await request(app.getHttpServer() as unknown)
+      const response = await request(httpServer())
         .get(`/blogs/${blogId}`)
         .expect(200);
 
@@ -94,14 +97,14 @@ describe('Blogs API (e2e)', () => {
         websiteUrl: 'https://updated.com',
       };
 
-      await request(app.getHttpServer() as unknown)
+      await request(httpServer())
         .put(`/blogs/${blogId}`)
         .send(updateBlogDto)
         .expect(204);
     }, 10000);
 
     it('GET /blogs/:id - verify blog was updated', async () => {
-      const response = await request(app.getHttpServer() as unknown)
+      const response = await request(httpServer())
         .get(`/blogs/${blogId}`)
         .expect(200);
 
@@ -115,15 +118,11 @@ describe('Blogs API (e2e)', () => {
     }, 10000);
 
     it('DELETE /blogs/:id - delete a blog', async () => {
-      await request(app.getHttpServer() as unknown)
-        .delete(`/blogs/${blogId}`)
-        .expect(204);
+      await request(httpServer()).delete(`/blogs/${blogId}`).expect(204);
     }, 10000);
 
     it('GET /blogs/:id - verify blog was deleted (404)', async () => {
-      await request(app.getHttpServer() as unknown)
-        .get(`/blogs/${blogId}`)
-        .expect(404);
+      await request(httpServer()).get(`/blogs/${blogId}`).expect(404);
     }, 10000);
   });
 
@@ -148,15 +147,12 @@ describe('Blogs API (e2e)', () => {
       ];
 
       for (const blog of blogs) {
-        await request(app.getHttpServer() as unknown)
-          .post('/blogs')
-          .send(blog)
-          .expect(201);
+        await request(httpServer()).post('/blogs').send(blog).expect(201);
       }
     }, 15000);
 
     it('GET /blogs - retrieve paginated blogs with page 1', async () => {
-      const response = await request(app.getHttpServer() as unknown)
+      const response = await request(httpServer())
         .get('/blogs?pageNumber=1&pageSize=2')
         .expect(200);
 
@@ -172,7 +168,7 @@ describe('Blogs API (e2e)', () => {
     }, 10000);
 
     it('GET /blogs - search blogs by name', async () => {
-      const response = await request(app.getHttpServer() as unknown)
+      const response = await request(httpServer())
         .get('/blogs?searchNameTerm=JavaScript')
         .expect(200);
 
@@ -185,7 +181,7 @@ describe('Blogs API (e2e)', () => {
     }, 10000);
 
     it('GET /blogs - sort by name ascending', async () => {
-      const response = await request(app.getHttpServer() as unknown)
+      const response = await request(httpServer())
         .get('/blogs?sortBy=name&sortDirection=asc')
         .expect(200);
 
@@ -194,6 +190,97 @@ describe('Blogs API (e2e)', () => {
       };
 
       expect(body.items.length).toBeGreaterThan(0);
+    }, 10000);
+  });
+
+  describe('Blog Posts', () => {
+    let blogId: string;
+    let postId: string;
+
+    beforeAll(async () => {
+      const blogResponse = await request(httpServer())
+        .post('/blogs')
+        .send({
+          name: 'Blog Posts Parent',
+          description: 'Parent blog for posts',
+          websiteUrl: 'https://blog-posts-parent.com',
+        })
+        .expect(201);
+
+      blogId = (blogResponse.body as { id: string }).id;
+    });
+
+    it('POST /blogs/:blogId/posts - creates a post for blog', async () => {
+      const response = await request(httpServer())
+        .post(`/blogs/${blogId}/posts`)
+        .send({
+          title: 'Blog Post Title',
+          shortDescription: 'Blog post short description',
+          content: 'Blog post content',
+        })
+        .expect(201);
+
+      const body = response.body as {
+        id: string;
+        title: string;
+        shortDescription: string;
+        content: string;
+        blogId: string;
+        blogName: string;
+        createdAt: string;
+        extendedLikesInfo: {
+          likesCount: number;
+          dislikesCount: number;
+          myStatus: 'None' | 'Like' | 'Dislike';
+          newestLikes: Array<{
+            addedAt: string;
+            userId: string;
+            login: string;
+          }>;
+        };
+      };
+
+      expect(body.title).toBe('Blog Post Title');
+      expect(body.shortDescription).toBe('Blog post short description');
+      expect(body.content).toBe('Blog post content');
+      expect(body.blogId).toBe(blogId);
+      expect(body.blogName).toBe('Blog Posts Parent');
+      expect(body.extendedLikesInfo.likesCount).toBe(0);
+      expect(body.extendedLikesInfo.dislikesCount).toBe(0);
+      expect(body.extendedLikesInfo.myStatus).toBe('None');
+      expect(body.extendedLikesInfo.newestLikes).toEqual([]);
+
+      postId = body.id;
+    }, 10000);
+
+    it('GET /blogs/:blogId/posts - returns all posts for blog', async () => {
+      const response = await request(httpServer())
+        .get(`/blogs/${blogId}/posts`)
+        .expect(200);
+
+      const body = response.body as {
+        items: Array<{ id: string }>;
+        page: number;
+        pageSize: number;
+        totalCount: number;
+      };
+
+      expect(body.items.length).toBeGreaterThan(0);
+      expect(body.totalCount).toBeGreaterThan(0);
+      expect(body.page).toBe(1);
+      expect(body.pageSize).toBe(10);
+      expect(body.items[0].id).toBe(postId);
+    }, 10000);
+
+    it('POST /blogs/:blogId/posts - returns 404 for missing blog', async () => {
+      await request(httpServer())
+        .post('/blogs/507f1f77bcf86cd799439999/posts')
+        .send({
+          title: 'Missing Blog Post',
+          shortDescription: 'Missing',
+          content: 'Missing',
+        })
+        .expect(404);
     }, 10000);
   });
 });

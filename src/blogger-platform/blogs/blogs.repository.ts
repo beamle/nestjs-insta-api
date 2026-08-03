@@ -4,7 +4,7 @@ import { UpdateBlogDto } from './dto/update-blog.dto';
 import { Model } from 'mongoose';
 import { Blog, BlogDocument } from './schema/blog.schema';
 import { InjectModel } from '@nestjs/mongoose';
-import { toObjectId } from '../helpers/helpers';
+import { toObjectId } from '../../helpers/helpers';
 import { BlogsQueryDto } from './dto/get-all-blogs.dto';
 
 @Injectable()
@@ -12,7 +12,8 @@ export class BlogsRepository {
   constructor(
     @InjectModel(Blog.name)
     private readonly blogModel: Model<BlogDocument>,
-  ) {}
+  ) {
+  }
 
   async create(createBlogDto: CreateBlogDto) {
     const blog = new this.blogModel({
@@ -25,8 +26,13 @@ export class BlogsRepository {
   }
 
   async findAll(query: BlogsQueryDto) {
-    const { searchNameTerm, sortBy, sortDirection, pageNumber, pageSize } =
-      query;
+    const {
+      searchNameTerm,
+      sortBy = 'createdAt',
+      sortDirection = 'desc',
+      pageNumber = 1,
+      pageSize = 10,
+    } = query;
 
     const filter = searchNameTerm
       ? {

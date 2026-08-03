@@ -7,7 +7,8 @@ import { BlogMapper } from './mappers/blogs.mapper';
 
 @Injectable()
 export class BlogsService {
-  constructor(private readonly blogsRepository: BlogsRepository) {}
+  constructor(private readonly blogsRepository: BlogsRepository) {
+  }
 
   async create(createBlogDto: CreateBlogDto) {
     const blog = await this.blogsRepository.create(createBlogDto);
@@ -15,12 +16,14 @@ export class BlogsService {
   }
 
   async findAll(query: BlogsQueryDto) {
+    const pageNumber = Number(query.pageNumber ?? 1);
+    const pageSize = Number(query.pageSize ?? 10);
     const { items, totalCount } = await this.blogsRepository.findAll(query);
 
     return {
-      pagesCount: totalCount > 0 ? Math.ceil(totalCount / query.pageSize) : 0,
-      page: Number(query.pageNumber),
-      pageSize: Number(query.pageSize),
+      pagesCount: totalCount > 0 ? Math.ceil(totalCount / pageSize) : 0,
+      page: pageNumber,
+      pageSize,
       totalCount,
       items: items.map((item) => BlogMapper.toViewModel(item)),
     };
