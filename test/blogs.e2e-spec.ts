@@ -52,7 +52,7 @@ describe('Blogs API (e2e)', () => {
     }, 10000);
 
     it('GET /blogs - retrieve all blogs', async () => {
-      const response = await request(app.getHttpServer() as unknown)
+      const response = await request(app.getHttpServer())
         .get('/blogs')
         .expect(200);
 
@@ -71,7 +71,7 @@ describe('Blogs API (e2e)', () => {
     }, 10000);
 
     it('GET /blogs/:id - retrieve a single blog', async () => {
-      const response = await request(app.getHttpServer() as unknown)
+      const response = await request(app.getHttpServer())
         .get(`/blogs/${blogId}`)
         .expect(200);
 
@@ -94,14 +94,14 @@ describe('Blogs API (e2e)', () => {
         websiteUrl: 'https://updated.com',
       };
 
-      await request(app.getHttpServer() as unknown)
+      await request(app.getHttpServer())
         .put(`/blogs/${blogId}`)
         .send(updateBlogDto)
         .expect(204);
     }, 10000);
 
     it('GET /blogs/:id - verify blog was updated', async () => {
-      const response = await request(app.getHttpServer() as unknown)
+      const response = await request(app.getHttpServer())
         .get(`/blogs/${blogId}`)
         .expect(200);
 
@@ -115,13 +115,13 @@ describe('Blogs API (e2e)', () => {
     }, 10000);
 
     it('DELETE /blogs/:id - delete a blog', async () => {
-      await request(app.getHttpServer() as unknown)
+      await request(app.getHttpServer())
         .delete(`/blogs/${blogId}`)
         .expect(204);
     }, 10000);
 
     it('GET /blogs/:id - verify blog was deleted (404)', async () => {
-      await request(app.getHttpServer() as unknown)
+      await request(app.getHttpServer())
         .get(`/blogs/${blogId}`)
         .expect(404);
     }, 10000);
@@ -148,7 +148,7 @@ describe('Blogs API (e2e)', () => {
       ];
 
       for (const blog of blogs) {
-        await request(app.getHttpServer() as unknown)
+        await request(app.getHttpServer())
           .post('/blogs')
           .send(blog)
           .expect(201);
@@ -156,7 +156,7 @@ describe('Blogs API (e2e)', () => {
     }, 15000);
 
     it('GET /blogs - retrieve paginated blogs with page 1', async () => {
-      const response = await request(app.getHttpServer() as unknown)
+      const response = await request(app.getHttpServer())
         .get('/blogs?pageNumber=1&pageSize=2')
         .expect(200);
 
@@ -172,7 +172,7 @@ describe('Blogs API (e2e)', () => {
     }, 10000);
 
     it('GET /blogs - search blogs by name', async () => {
-      const response = await request(app.getHttpServer() as unknown)
+      const response = await request(app.getHttpServer())
         .get('/blogs?searchNameTerm=JavaScript')
         .expect(200);
 
@@ -185,7 +185,7 @@ describe('Blogs API (e2e)', () => {
     }, 10000);
 
     it('GET /blogs - sort by name ascending', async () => {
-      const response = await request(app.getHttpServer() as unknown)
+      const response = await request(app.getHttpServer())
         .get('/blogs?sortBy=name&sortDirection=asc')
         .expect(200);
 
