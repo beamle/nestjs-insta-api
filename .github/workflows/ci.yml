@@ -62,7 +62,7 @@ jobs:
 
       # Run unit tests
       - name: Run unit tests
-        run: pnpm run test -- src/blogs/blogs.controller.unit.spec.ts
+        run: pnpm run test -- src/blogger-platform/blogs/blogs.controller.unit.spec.ts
         continue-on-error: false
 
       # Run e2e tests
