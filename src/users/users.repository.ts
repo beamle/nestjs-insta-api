@@ -26,7 +26,12 @@ export class UsersRepository {
   async findAll(query: GetAllUsersDto) {
     const pageNumber = Number(query.pageNumber ?? 1);
     const pageSize = Number(query.pageSize ?? 10);
-    const filterParts = [];
+    type UserSearchFilter = {
+      login?: { $regex: string; $options: 'i' };
+      email?: { $regex: string; $options: 'i' };
+    };
+
+    const filterParts: UserSearchFilter[] = [];
 
     if (query.searchLoginTerm) {
       filterParts.push({
@@ -40,7 +45,10 @@ export class UsersRepository {
       });
     }
 
-    const filter = filterParts.length > 0 ? { $and: filterParts } : {};
+    const filter: { $and?: UserSearchFilter[] } = {};
+    if (filterParts.length > 0) {
+      filter.$and = filterParts;
+    }
     const totalCount = await this.userModel.countDocuments(filter);
     const items = await this.userModel
       .find(filter)
