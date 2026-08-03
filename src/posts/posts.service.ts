@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
+import { CreatePostForBlogDto } from './dto/create-post-for-blog.dto';
 import { GetAllPostsDto } from './dto/get-all-posts.dto';
 import { PostsRepository } from './posts.repository';
 import { BlogsRepository } from '../blogs/blogs.repository';
@@ -14,16 +15,19 @@ export class PostsService {
   }
 
   async create(createPostDto: CreatePostDto) {
-    const blog = await this.blogsRepository.findOne(createPostDto.blogId);
+    return this.createForBlog(createPostDto.blogId, createPostDto);
+  }
+
+  async createForBlog(blogId: string, createPostDto: CreatePostForBlogDto) {
+    const blog = await this.blogsRepository.findOne(blogId);
 
     if (!blog) {
-      throw new NotFoundException(
-        `No such blog with id: ${createPostDto.blogId}`,
-      );
+      throw new NotFoundException(`No such blog with id: ${blogId}`);
     }
 
     const post = await this.postsRepository.create({
       ...createPostDto,
+      blogId,
       blogName: blog.name,
     });
 
@@ -55,5 +59,31 @@ export class PostsService {
     }
 
     return PostsMapper.toViewModel(post);
+  }
+
+  async findAllByBlog(blogId: string, query: GetAllPostsDto) {
+    const blog = await this.blogsRepository.findOne(blogId);
+
+    if (!blog) {
+      throw new NotFoundException(`No such blog with id: ${blogId}`);
+    }
+
+    const pageNumber = Number(query.pageNumber ?? 1);
+    const pageSize = Number(query.pageSize ?? 10);
+    const { items, totalCount } = await this.postsRepository.findAll(
+      {
+        pageNumber,
+        pageSize,
+      },
+      blogId,
+    );
+
+    return {
+      pagesCount: totalCount > 0 ? Math.ceil(totalCount / pageSize) : 0,
+      page: pageNumber,
+      pageSize,
+      totalCount,
+      items: items.map((item) => PostsMapper.toViewModel(item)),
+    };
   }
 }

@@ -192,4 +192,95 @@ describe('Blogs API (e2e)', () => {
       expect(body.items.length).toBeGreaterThan(0);
     }, 10000);
   });
+
+  describe('Blog Posts', () => {
+    let blogId: string;
+    let postId: string;
+
+    beforeAll(async () => {
+      const blogResponse = await request(httpServer())
+        .post('/blogs')
+        .send({
+          name: 'Blog Posts Parent',
+          description: 'Parent blog for posts',
+          websiteUrl: 'https://blog-posts-parent.com',
+        })
+        .expect(201);
+
+      blogId = (blogResponse.body as { id: string }).id;
+    });
+
+    it('POST /blogs/:blogId/posts - creates a post for blog', async () => {
+      const response = await request(httpServer())
+        .post(`/blogs/${blogId}/posts`)
+        .send({
+          title: 'Blog Post Title',
+          shortDescription: 'Blog post short description',
+          content: 'Blog post content',
+        })
+        .expect(201);
+
+      const body = response.body as {
+        id: string;
+        title: string;
+        shortDescription: string;
+        content: string;
+        blogId: string;
+        blogName: string;
+        createdAt: string;
+        extendedLikesInfo: {
+          likesCount: number;
+          dislikesCount: number;
+          myStatus: 'None' | 'Like' | 'Dislike';
+          newestLikes: Array<{
+            addedAt: string;
+            userId: string;
+            login: string;
+          }>;
+        };
+      };
+
+      expect(body.title).toBe('Blog Post Title');
+      expect(body.shortDescription).toBe('Blog post short description');
+      expect(body.content).toBe('Blog post content');
+      expect(body.blogId).toBe(blogId);
+      expect(body.blogName).toBe('Blog Posts Parent');
+      expect(body.extendedLikesInfo.likesCount).toBe(0);
+      expect(body.extendedLikesInfo.dislikesCount).toBe(0);
+      expect(body.extendedLikesInfo.myStatus).toBe('None');
+      expect(body.extendedLikesInfo.newestLikes).toEqual([]);
+
+      postId = body.id;
+    }, 10000);
+
+    it('GET /blogs/:blogId/posts - returns all posts for blog', async () => {
+      const response = await request(httpServer())
+        .get(`/blogs/${blogId}/posts`)
+        .expect(200);
+
+      const body = response.body as {
+        items: Array<{ id: string }>;
+        page: number;
+        pageSize: number;
+        totalCount: number;
+      };
+
+      expect(body.items.length).toBeGreaterThan(0);
+      expect(body.totalCount).toBeGreaterThan(0);
+      expect(body.page).toBe(1);
+      expect(body.pageSize).toBe(10);
+      expect(body.items[0].id).toBe(postId);
+    }, 10000);
+
+    it('POST /blogs/:blogId/posts - returns 404 for missing blog', async () => {
+      await request(httpServer())
+        .post('/blogs/507f1f77bcf86cd799439999/posts')
+        .send({
+          title: 'Missing Blog Post',
+          shortDescription: 'Missing',
+          content: 'Missing',
+        })
+        .expect(404);
+    }, 10000);
+  });
 });

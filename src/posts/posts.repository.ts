@@ -29,13 +29,14 @@ export class PostsRepository {
     return await post.save();
   }
 
-  async findAll(query: GetAllPostsDto) {
+  async findAll(query: GetAllPostsDto, blogId?: string) {
     const pageNumber = Number(query.pageNumber ?? 1);
     const pageSize = Number(query.pageSize ?? 10);
+    const filter = blogId ? { blogId } : {};
 
-    const totalCount = await this.postModel.countDocuments({});
+    const totalCount = await this.postModel.countDocuments(filter);
     const items = await this.postModel
-      .find({})
+      .find(filter)
       .sort({ createdAt: -1 })
       .skip((pageNumber - 1) * pageSize)
       .limit(pageSize)
