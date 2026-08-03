@@ -1,10 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
+import { App } from 'supertest/types';
 import { AppModule } from '../src/app/app.module';
 
 describe('Blogs API (e2e)', () => {
   let app: INestApplication;
+
+  const httpServer = () => app.getHttpServer() as unknown as App;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -13,9 +16,11 @@ describe('Blogs API (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     await app.init();
+    await request(httpServer()).delete('/testing/all-data').expect(204);
   }, 30000);
 
   afterAll(async () => {
+    await request(httpServer()).delete('/testing/all-data').expect(204);
     await app.close();
   }, 10000);
 
@@ -29,7 +34,7 @@ describe('Blogs API (e2e)', () => {
         websiteUrl: 'https://example.com',
       };
 
-      const response = await request(app.getHttpServer())
+      const response = await request(httpServer())
         .post('/blogs')
         .send(createBlogDto)
         .expect(201);
@@ -52,9 +57,7 @@ describe('Blogs API (e2e)', () => {
     }, 10000);
 
     it('GET /blogs - retrieve all blogs', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/blogs')
-        .expect(200);
+      const response = await request(httpServer()).get('/blogs').expect(200);
 
       const body = response.body as {
         items: unknown[];
@@ -71,7 +74,7 @@ describe('Blogs API (e2e)', () => {
     }, 10000);
 
     it('GET /blogs/:id - retrieve a single blog', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(httpServer())
         .get(`/blogs/${blogId}`)
         .expect(200);
 
@@ -94,14 +97,14 @@ describe('Blogs API (e2e)', () => {
         websiteUrl: 'https://updated.com',
       };
 
-      await request(app.getHttpServer())
+      await request(httpServer())
         .put(`/blogs/${blogId}`)
         .send(updateBlogDto)
         .expect(204);
     }, 10000);
 
     it('GET /blogs/:id - verify blog was updated', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(httpServer())
         .get(`/blogs/${blogId}`)
         .expect(200);
 
@@ -115,15 +118,11 @@ describe('Blogs API (e2e)', () => {
     }, 10000);
 
     it('DELETE /blogs/:id - delete a blog', async () => {
-      await request(app.getHttpServer())
-        .delete(`/blogs/${blogId}`)
-        .expect(204);
+      await request(httpServer()).delete(`/blogs/${blogId}`).expect(204);
     }, 10000);
 
     it('GET /blogs/:id - verify blog was deleted (404)', async () => {
-      await request(app.getHttpServer())
-        .get(`/blogs/${blogId}`)
-        .expect(404);
+      await request(httpServer()).get(`/blogs/${blogId}`).expect(404);
     }, 10000);
   });
 
@@ -148,15 +147,12 @@ describe('Blogs API (e2e)', () => {
       ];
 
       for (const blog of blogs) {
-        await request(app.getHttpServer())
-          .post('/blogs')
-          .send(blog)
-          .expect(201);
+        await request(httpServer()).post('/blogs').send(blog).expect(201);
       }
     }, 15000);
 
     it('GET /blogs - retrieve paginated blogs with page 1', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(httpServer())
         .get('/blogs?pageNumber=1&pageSize=2')
         .expect(200);
 
@@ -172,7 +168,7 @@ describe('Blogs API (e2e)', () => {
     }, 10000);
 
     it('GET /blogs - search blogs by name', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(httpServer())
         .get('/blogs?searchNameTerm=JavaScript')
         .expect(200);
 
@@ -185,7 +181,7 @@ describe('Blogs API (e2e)', () => {
     }, 10000);
 
     it('GET /blogs - sort by name ascending', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(httpServer())
         .get('/blogs?sortBy=name&sortDirection=asc')
         .expect(200);
 
