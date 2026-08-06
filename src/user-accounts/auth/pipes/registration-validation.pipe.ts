@@ -5,8 +5,8 @@ type ValidationError = { message: string; field: string };
 
 @Injectable()
 export class RegistrationValidationPipe implements PipeTransform {
-  transform(value: unknown): RegistrationUserDto {
-    const dto = value as Record<string, unknown>;
+  transform(value: RegistrationUserDto): RegistrationUserDto {
+    const dto = value
     const errors: ValidationError[] = [];
 
     if (
@@ -38,9 +38,9 @@ export class RegistrationValidationPipe implements PipeTransform {
     }
 
     return {
-      login: dto.login as string,
-      password: dto.password as string,
-      email: dto.email as string,
+      login: dto.login,
+      password: dto.password,
+      email: dto.email,
     };
   }
 }
