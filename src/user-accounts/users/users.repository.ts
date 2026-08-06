@@ -20,6 +20,14 @@ export class UsersRepository {
     return await user.save();
   }
 
+  async findByLogin(login: string) {
+    return this.userModel.findOne({ login }).exec();
+  }
+
+  async findByEmail(email: string) {
+    return this.userModel.findOne({ email }).exec();
+  }
+
   async findAll(query: GetAllUsersDto) {
     const pageNumber = Number(query.pageNumber ?? 1);
     const pageSize = Number(query.pageSize ?? 10);
