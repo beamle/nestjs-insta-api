@@ -28,6 +28,14 @@ export class UsersRepository {
     return this.userModel.findOne({ email }).exec();
   }
 
+  async findByLoginOrEmail(loginOrEmail: string) {
+    return this.userModel
+      .findOne({
+        $or: [{ login: loginOrEmail }, { email: loginOrEmail }],
+      })
+      .exec();
+  }
+
   async findByConfirmationCode(confirmationCode: string) {
     return this.userModel.findOne({ confirmationCode }).exec();
   }

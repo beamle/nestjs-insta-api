@@ -29,7 +29,15 @@
 
 ```bash
 $ pnpm install
+$ cp .env.example .env
 ```
+
+## Environment
+
+- `MONGO_URI` - MongoDB connection string
+- `JWT_SECRET` - JWT signing secret for `/login`
+- `CONFIRMATION_LINK_BASE_URL` - frontend link used in registration emails
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_SECURE` - email delivery settings
 
 ## Compile and run the project
 

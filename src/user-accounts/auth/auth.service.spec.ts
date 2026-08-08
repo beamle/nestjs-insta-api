@@ -1,10 +1,11 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 
 describe('AuthService', () => {
   const usersRepository = {
     findByLogin: jest.fn(),
     findByEmail: jest.fn(),
+    findByLoginOrEmail: jest.fn(),
     findByConfirmationCode: jest.fn(),
     create: jest.fn(),
     confirmEmail: jest.fn(),
@@ -128,5 +129,31 @@ describe('AuthService', () => {
         email: 'test@example.com',
       }),
     ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('returns access token for valid credentials', async () => {
+    usersRepository.findByLoginOrEmail.mockResolvedValue({
+      _id: { toString: () => 'user-id' },
+      password: 'secret12',
+    });
+
+    const result = await service.login({
+      loginOrEmail: 'tester',
+      password: 'secret12',
+    });
+
+    expect(result.accessToken).toEqual(expect.any(String));
+    expect(result.accessToken.length).toBeGreaterThan(10);
+  });
+
+  it('throws 401 for wrong credentials', async () => {
+    usersRepository.findByLoginOrEmail.mockResolvedValue(null);
+
+    await expect(
+      service.login({
+        loginOrEmail: 'tester',
+        password: 'wrong',
+      }),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 });

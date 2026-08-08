@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -11,7 +12,7 @@ import { TestingController } from '../testing/testing.controller';
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://localhost:27017/nest'),
+    MongooseModule.forRoot(process.env.MONGO_URI ?? 'mongodb://localhost:27017/nest'),
     BlogsModule,
     PostsModule,
     CommentsModule,

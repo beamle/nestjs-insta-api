@@ -1,10 +1,12 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
+import { sign } from 'jsonwebtoken';
 import { UsersRepository } from '../users/users.repository';
 import { RegistrationUserDto } from './dto/registration-user.dto';
 import { RegistrationEmailService } from './email/registration-email.service';
 import { RegistrationConfirmationDto } from './dto/registration-confirmation.dto';
 import { RegistrationEmailResendingDto } from './dto/registration-email-resending.dto';
+import { LoginDto } from './dto/login.dto';
 
 type ValidationError = { message: string; field: string };
 
@@ -101,6 +103,22 @@ export class AuthService {
       dto.email,
       confirmationCode,
     );
+  }
+
+  async login(dto: LoginDto) {
+    const user = await this.usersRepository.findByLoginOrEmail(dto.loginOrEmail);
+
+    if (!user || user.password !== dto.password) {
+      throw new UnauthorizedException();
+    }
+
+    const accessToken = sign(
+      { userId: user._id.toString() },
+      process.env.JWT_SECRET ?? 'secret',
+      { expiresIn: '5m' },
+    );
+
+    return { accessToken };
   }
 
   private generateConfirmationCode() {
