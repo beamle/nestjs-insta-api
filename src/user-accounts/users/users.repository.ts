@@ -95,4 +95,24 @@ export class UsersRepository {
       )
       .exec();
   }
+
+  async updateConfirmationCode(
+    email: string,
+    confirmationCode: string,
+    confirmationCodeExpiresAt: Date,
+  ) {
+    return this.userModel
+      .findOneAndUpdate(
+        { email },
+        {
+          $set: {
+            confirmationCode,
+            confirmationCodeExpiresAt,
+            isEmailConfirmed: false,
+          },
+        },
+        { new: true },
+      )
+      .exec();
+  }
 }

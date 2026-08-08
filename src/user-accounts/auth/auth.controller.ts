@@ -2,7 +2,9 @@ import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs
 import { AuthService } from './auth.service';
 import { RegistrationUserDto } from './dto/registration-user.dto';
 import { RegistrationConfirmationDto } from './dto/registration-confirmation.dto';
+import { RegistrationEmailResendingDto } from './dto/registration-email-resending.dto';
 import { RateLimitGuard } from './guards/rate-limit.guard';
+import { RegistrationEmailResendingValidationPipe } from './pipes/registration-email-resending-validation.pipe';
 import { RegistrationConfirmationValidationPipe } from './pipes/registration-confirmation-validation.pipe';
 import { RegistrationValidationPipe } from './pipes/registration-validation.pipe';
 
@@ -28,5 +30,15 @@ export class AuthController {
     dto: RegistrationConfirmationDto,
   ): Promise<void> {
     await this.authService.confirmRegistration(dto);
+  }
+
+  @Post('registration-email-resending')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(RateLimitGuard)
+  async resendRegistrationEmail(
+    @Body(new RegistrationEmailResendingValidationPipe())
+    dto: RegistrationEmailResendingDto,
+  ): Promise<void> {
+    await this.authService.resendConfirmationEmail(dto);
   }
 }

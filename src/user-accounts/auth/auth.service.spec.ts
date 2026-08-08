@@ -8,6 +8,7 @@ describe('AuthService', () => {
     findByConfirmationCode: jest.fn(),
     create: jest.fn(),
     confirmEmail: jest.fn(),
+    updateConfirmationCode: jest.fn(),
   };
   const registrationEmailService = {
     sendConfirmationCode: jest.fn(),
@@ -90,6 +91,41 @@ describe('AuthService', () => {
     await expect(
       service.confirmRegistration({
         confirmationCode: 'BADCODE',
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('resends confirmation email for unconfirmed user', async () => {
+    usersRepository.findByEmail.mockResolvedValue({
+      isEmailConfirmed: false,
+    });
+    usersRepository.updateConfirmationCode.mockResolvedValue(undefined);
+
+    await expect(
+      service.resendConfirmationEmail({
+        email: 'test@example.com',
+      }),
+    ).resolves.toBeUndefined();
+
+    expect(usersRepository.updateConfirmationCode).toHaveBeenCalledWith(
+      'test@example.com',
+      expect.any(String),
+      expect.any(Date),
+    );
+    expect(registrationEmailService.sendConfirmationCode).toHaveBeenCalledWith(
+      'test@example.com',
+      expect.any(String),
+    );
+  });
+
+  it('rejects resend for confirmed user', async () => {
+    usersRepository.findByEmail.mockResolvedValue({
+      isEmailConfirmed: true,
+    });
+
+    await expect(
+      service.resendConfirmationEmail({
+        email: 'test@example.com',
       }),
     ).rejects.toBeInstanceOf(BadRequestException);
   });

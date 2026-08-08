@@ -4,6 +4,7 @@ import { UsersRepository } from '../users/users.repository';
 import { RegistrationUserDto } from './dto/registration-user.dto';
 import { RegistrationEmailService } from './email/registration-email.service';
 import { RegistrationConfirmationDto } from './dto/registration-confirmation.dto';
+import { RegistrationEmailResendingDto } from './dto/registration-email-resending.dto';
 
 type ValidationError = { message: string; field: string };
 
@@ -71,6 +72,35 @@ export class AuthService {
     }
 
     await this.usersRepository.confirmEmail(user._id.toString());
+  }
+
+  async resendConfirmationEmail(dto: RegistrationEmailResendingDto) {
+    const user = await this.usersRepository.findByEmail(dto.email);
+
+    if (!user || user.isEmailConfirmed) {
+      throw new BadRequestException({
+        errorsMessages: [
+          {
+            field: 'email',
+            message: 'email is invalid or already confirmed',
+          },
+        ],
+      });
+    }
+
+    const confirmationCode = this.generateConfirmationCode();
+    const confirmationCodeExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    await this.usersRepository.updateConfirmationCode(
+      dto.email,
+      confirmationCode,
+      confirmationCodeExpiresAt,
+    );
+
+    await this.registrationEmailService.sendConfirmationCode(
+      dto.email,
+      confirmationCode,
+    );
   }
 
   private generateConfirmationCode() {

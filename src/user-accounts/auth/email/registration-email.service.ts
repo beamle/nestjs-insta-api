@@ -5,14 +5,21 @@ import nodemailer from 'nodemailer';
 export class RegistrationEmailService {
   private readonly transporter = this.createTransporter();
   private readonly from = process.env.SMTP_FROM ?? 'no-reply@example.com';
+  private readonly confirmationBaseUrl =
+    process.env.CONFIRMATION_LINK_BASE_URL ??
+    'https://some-front.com/confirm-registration';
 
   async sendConfirmationCode(email: string, confirmationCode: string) {
+    const confirmationLink = `${this.confirmationBaseUrl}?code=${encodeURIComponent(
+      confirmationCode,
+    )}`;
+
     await this.transporter.sendMail({
       from: this.from,
       to: email,
       subject: 'Email confirmation',
-      text: `Your confirmation code is ${confirmationCode}`,
-      html: `<p>Your confirmation code is <b>${confirmationCode}</b></p>`,
+      text: `Confirm your email: ${confirmationLink}`,
+      html: `<p>Confirm your email: <a href="${confirmationLink}">${confirmationLink}</a></p>`,
     });
   }
 
