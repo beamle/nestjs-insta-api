@@ -12,6 +12,15 @@ export class User {
   @Prop({ required: true })
   password: string;
 
+  @Prop({ type: Boolean, required: false, default: false })
+  isEmailConfirmed: boolean;
+
+  @Prop({ type: String, required: false, default: null })
+  confirmationCode: string | null;
+
+  @Prop({ type: Date, required: false, default: null })
+  confirmationCodeExpiresAt: Date | null;
+
   createdAt: Date;
 
   updatedAt: Date;
@@ -20,11 +29,17 @@ export class User {
     login: string;
     password: string;
     email: string;
+    isEmailConfirmed?: boolean;
+    confirmationCode?: string | null;
+    confirmationCodeExpiresAt?: Date | null;
   }): User {
     const user = new User();
     user.login = dto.login;
     user.password = dto.password;
     user.email = dto.email;
+    user.isEmailConfirmed = dto.isEmailConfirmed ?? false;
+    user.confirmationCode = dto.confirmationCode ?? null;
+    user.confirmationCodeExpiresAt = dto.confirmationCodeExpiresAt ?? null;
     return user;
   }
 }

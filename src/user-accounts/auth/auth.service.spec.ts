@@ -7,12 +7,18 @@ describe('AuthService', () => {
     findByEmail: jest.fn(),
     create: jest.fn(),
   };
+  const registrationEmailService = {
+    sendConfirmationCode: jest.fn(),
+  };
 
   let service: AuthService;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    service = new AuthService(usersRepository as never);
+    service = new AuthService(
+      usersRepository as never,
+      registrationEmailService as never,
+    );
   });
 
   it('registers a user', async () => {
@@ -28,11 +34,20 @@ describe('AuthService', () => {
       }),
     ).resolves.toBeUndefined();
 
-    expect(usersRepository.create).toHaveBeenCalledWith({
-      login: 'tester',
-      password: 'secret12',
-      email: 'test@example.com',
-    });
+    expect(usersRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        login: 'tester',
+        password: 'secret12',
+        email: 'test@example.com',
+        isEmailConfirmed: false,
+        confirmationCode: expect.any(String),
+        confirmationCodeExpiresAt: expect.any(Date),
+      }),
+    );
+    expect(registrationEmailService.sendConfirmationCode).toHaveBeenCalledWith(
+      'test@example.com',
+      expect.any(String),
+    );
   });
 
   it('rejects duplicate login or email', async () => {
