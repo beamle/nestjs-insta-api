@@ -3,14 +3,16 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app/app.module';
+import { UsersRepository } from '../src/user-accounts/users/users.repository';
 
 describe('Auth API (e2e)', () => {
   let app: INestApplication<App>;
+  let moduleFixture: TestingModule;
 
   const httpServer = () => app.getHttpServer();
 
   beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
+    moduleFixture = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
 
@@ -24,12 +26,42 @@ describe('Auth API (e2e)', () => {
   }, 10000);
 
   it('POST /auth/registration returns 204 for valid payload', async () => {
+    const payload = {
+      login: 'tester',
+      password: 'secret12',
+      email: 'tester@example.com',
+    };
+
     await request(httpServer())
       .post('/auth/registration')
+      .send(payload)
+      .expect(204);
+
+    const usersRepository = moduleFixture.get(UsersRepository);
+    const user = await usersRepository.findByEmail(payload.email);
+
+    expect(user?.confirmationCode).toBeDefined();
+  }, 10000);
+
+  it('POST /auth/registration-confirmation returns 204 for valid code', async () => {
+    const payload = {
+      login: 'tester-confirm',
+      password: 'secret12',
+      email: 'tester-confirm@example.com',
+    };
+
+    await request(httpServer())
+      .post('/auth/registration')
+      .send(payload)
+      .expect(204);
+
+    const usersRepository = moduleFixture.get(UsersRepository);
+    const user = await usersRepository.findByEmail(payload.email);
+
+    await request(httpServer())
+      .post('/auth/registration-confirmation')
       .send({
-        login: 'tester',
-        password: 'secret12',
-        email: 'tester@example.com',
+        confirmationCode: user?.confirmationCode,
       })
       .expect(204);
   });
@@ -92,4 +124,43 @@ describe('Auth API (e2e)', () => {
       })
       .expect(429);
   });
+
+  it('POST /auth/registration-confirmation returns 400 for invalid code', async () => {
+    const response = await request(httpServer())
+      .post('/auth/registration-confirmation')
+      .send({
+        confirmationCode: 'INVALID-CODE',
+      })
+      .expect(400);
+
+    expect(response.body.errorsMessages).toBeDefined();
+  });
+
+  it('POST /auth/registration-confirmation returns 429 after too many attempts', async () => {
+    const payload = {
+      login: 'tester-rate',
+      password: 'secret12',
+      email: 'tester-rate@example.com',
+    };
+
+    await request(httpServer()).post('/auth/registration').send(payload).expect(204);
+
+    for (let index = 0; index < 5; index += 1) {
+      await request(httpServer())
+        .post('/auth/registration-confirmation')
+        .set('x-forwarded-for', '10.0.0.2')
+        .send({
+          confirmationCode: 'INVALID-CODE',
+        })
+        .expect(400);
+    }
+
+    await request(httpServer())
+      .post('/auth/registration-confirmation')
+      .set('x-forwarded-for', '10.0.0.2')
+      .send({
+        confirmationCode: 'INVALID-CODE',
+      })
+      .expect(429);
+  }, 10000);
 });

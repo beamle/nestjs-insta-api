@@ -3,6 +3,7 @@ import { randomBytes } from 'crypto';
 import { UsersRepository } from '../users/users.repository';
 import { RegistrationUserDto } from './dto/registration-user.dto';
 import { RegistrationEmailService } from './email/registration-email.service';
+import { RegistrationConfirmationDto } from './dto/registration-confirmation.dto';
 
 type ValidationError = { message: string; field: string };
 
@@ -46,6 +47,30 @@ export class AuthService {
       dto.email,
       confirmationCode,
     );
+  }
+
+  async confirmRegistration(dto: RegistrationConfirmationDto) {
+    const user = await this.usersRepository.findByConfirmationCode(
+      dto.confirmationCode,
+    );
+
+    if (
+      !user ||
+      user.isEmailConfirmed ||
+      !user.confirmationCodeExpiresAt ||
+      user.confirmationCodeExpiresAt.getTime() < Date.now()
+    ) {
+      throw new BadRequestException({
+        errorsMessages: [
+          {
+            field: 'confirmationCode',
+            message: 'confirmation code is invalid, expired, or already used',
+          },
+        ],
+      });
+    }
+
+    await this.usersRepository.confirmEmail(user._id.toString());
   }
 
   private generateConfirmationCode() {

@@ -28,6 +28,10 @@ export class UsersRepository {
     return this.userModel.findOne({ email }).exec();
   }
 
+  async findByConfirmationCode(confirmationCode: string) {
+    return this.userModel.findOne({ confirmationCode }).exec();
+  }
+
   async findAll(query: GetAllUsersDto) {
     const pageNumber = Number(query.pageNumber ?? 1);
     const pageSize = Number(query.pageSize ?? 10);
@@ -74,5 +78,21 @@ export class UsersRepository {
 
   remove(id: string) {
     return this.userModel.deleteOne({ _id: toObjectId(id) }).exec();
+  }
+
+  async confirmEmail(id: string) {
+    return this.userModel
+      .findByIdAndUpdate(
+        toObjectId(id),
+        {
+          $set: {
+            isEmailConfirmed: true,
+            confirmationCode: null,
+            confirmationCodeExpiresAt: null,
+          },
+        },
+        { new: true },
+      )
+      .exec();
   }
 }

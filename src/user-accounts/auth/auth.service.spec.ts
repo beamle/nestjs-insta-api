@@ -5,7 +5,9 @@ describe('AuthService', () => {
   const usersRepository = {
     findByLogin: jest.fn(),
     findByEmail: jest.fn(),
+    findByConfirmationCode: jest.fn(),
     create: jest.fn(),
+    confirmEmail: jest.fn(),
   };
   const registrationEmailService = {
     sendConfirmationCode: jest.fn(),
@@ -59,6 +61,35 @@ describe('AuthService', () => {
         login: 'tester',
         password: 'secret12',
         email: 'test@example.com',
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('confirms registration by code', async () => {
+    usersRepository.findByConfirmationCode.mockResolvedValue({
+      _id: {
+        toString: () => 'user-id',
+      },
+      isEmailConfirmed: false,
+      confirmationCodeExpiresAt: new Date(Date.now() + 60_000),
+    });
+    usersRepository.confirmEmail.mockResolvedValue(undefined);
+
+    await expect(
+      service.confirmRegistration({
+        confirmationCode: 'ABC123',
+      }),
+    ).resolves.toBeUndefined();
+
+    expect(usersRepository.confirmEmail).toHaveBeenCalledWith('user-id');
+  });
+
+  it('rejects invalid confirmation code', async () => {
+    usersRepository.findByConfirmationCode.mockResolvedValue(null);
+
+    await expect(
+      service.confirmRegistration({
+        confirmationCode: 'BADCODE',
       }),
     ).rejects.toBeInstanceOf(BadRequestException);
   });
