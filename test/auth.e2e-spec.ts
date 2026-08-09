@@ -164,7 +164,7 @@ describe('Auth API (e2e)', () => {
       .expect(429);
   }, 10000);
 
-  it('POST /login returns 200 with accessToken for valid credentials', async () => {
+  it('POST /auth/login returns 200 with accessToken for valid credentials', async () => {
     const payload = {
       login: 'login-user',
       password: 'secret12',
@@ -174,7 +174,7 @@ describe('Auth API (e2e)', () => {
     await request(httpServer()).post('/auth/registration').send(payload).expect(204);
 
     const response = await request(httpServer())
-      .post('/login')
+      .post('/auth/login')
       .send({
         loginOrEmail: payload.login,
         password: payload.password,
@@ -184,9 +184,9 @@ describe('Auth API (e2e)', () => {
     expect(response.body.accessToken).toEqual(expect.any(String));
   });
 
-  it('POST /login returns 400 for invalid input', async () => {
+  it('POST /auth/login returns 400 for invalid input', async () => {
     await request(httpServer())
-      .post('/login')
+      .post('/auth/login')
       .send({
         loginOrEmail: '',
         password: '',
@@ -194,9 +194,9 @@ describe('Auth API (e2e)', () => {
       .expect(400);
   });
 
-  it('POST /login returns 401 for wrong credentials', async () => {
+  it('POST /auth/login returns 401 for wrong credentials', async () => {
     await request(httpServer())
-      .post('/login')
+      .post('/auth/login')
       .send({
         loginOrEmail: 'unknown-user',
         password: 'wrong',

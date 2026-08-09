@@ -5,7 +5,7 @@ import { Model } from 'mongoose';
 import { Blog, BlogDocument } from './schema/blog.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { toObjectId } from '../../helpers/helpers';
-import { BlogsQueryDto } from './dto/get-all-blogs.dto';
+import { BlogsQueryDto } from "./dto/get-all-blogs.dto";
 
 @Injectable()
 export class BlogsRepository {

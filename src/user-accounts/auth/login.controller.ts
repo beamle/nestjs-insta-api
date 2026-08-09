@@ -3,7 +3,7 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { LoginValidationPipe } from './pipes/login-validation.pipe';
 
-@Controller()
+@Controller('auth')
 export class LoginController {
   constructor(private readonly authService: AuthService) {
   }
