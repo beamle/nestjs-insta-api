@@ -35,4 +35,22 @@ describe('RegistrationEmailService', () => {
       }),
     );
   });
+
+  it('sends password recovery link with recoveryCode query param', async () => {
+    const service = new RegistrationEmailService();
+
+    await service.sendPasswordRecoveryCode('test@example.com', 'REC123');
+
+    expect(sendMail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: 'test@example.com',
+        text: expect.stringContaining(
+          'https://some-front.com/password-recovery?recoveryCode=REC123',
+        ),
+        html: expect.stringContaining(
+          'https://some-front.com/password-recovery?recoveryCode=REC123',
+        ),
+      }),
+    );
+  });
 });

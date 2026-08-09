@@ -123,4 +123,23 @@ export class UsersRepository {
       )
       .exec();
   }
+
+  async updatePasswordRecoveryCode(
+    email: string,
+    passwordRecoveryCode: string,
+    passwordRecoveryCodeExpiresAt: Date,
+  ) {
+    return this.userModel
+      .findOneAndUpdate(
+        { email },
+        {
+          $set: {
+            passwordRecoveryCode,
+            passwordRecoveryCodeExpiresAt,
+          },
+        },
+        { new: true },
+      )
+      .exec();
+  }
 }

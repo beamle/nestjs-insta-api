@@ -8,6 +8,9 @@ export class RegistrationEmailService {
   private readonly confirmationBaseUrl =
     process.env.CONFIRMATION_LINK_BASE_URL ??
     'https://some-front.com/confirm-registration';
+  private readonly passwordRecoveryBaseUrl =
+    process.env.PASSWORD_RECOVERY_LINK_BASE_URL ??
+    'https://some-front.com/password-recovery';
 
   async sendConfirmationCode(email: string, confirmationCode: string) {
     const confirmationLink = `${this.confirmationBaseUrl}?code=${encodeURIComponent(
@@ -20,6 +23,20 @@ export class RegistrationEmailService {
       subject: 'Email confirmation',
       text: `Confirm your email: ${confirmationLink}`,
       html: `<p>Confirm your email: <a href="${confirmationLink}">${confirmationLink}</a></p>`,
+    });
+  }
+
+  async sendPasswordRecoveryCode(email: string, recoveryCode: string) {
+    const recoveryLink = `${this.passwordRecoveryBaseUrl}?recoveryCode=${encodeURIComponent(
+      recoveryCode,
+    )}`;
+
+    await this.transporter.sendMail({
+      from: this.from,
+      to: email,
+      subject: 'Password recovery',
+      text: `Reset your password: ${recoveryLink}`,
+      html: `<p>Reset your password: <a href="${recoveryLink}">${recoveryLink}</a></p>`,
     });
   }
 

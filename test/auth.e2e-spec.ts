@@ -203,4 +203,42 @@ describe('Auth API (e2e)', () => {
       })
       .expect(401);
   });
+
+  it('POST /auth/password-recovery returns 204 for non-existing email', async () => {
+    await request(httpServer())
+      .post('/auth/password-recovery')
+      .send({
+        email: 'missing@example.com',
+      })
+      .expect(204);
+  });
+
+  it('POST /auth/password-recovery returns 400 for invalid email', async () => {
+    await request(httpServer())
+      .post('/auth/password-recovery')
+      .send({
+        email: '222^gmail.com',
+      })
+      .expect(400);
+  });
+
+  it('POST /auth/password-recovery returns 429 after too many attempts', async () => {
+    for (let index = 0; index < 5; index += 1) {
+      await request(httpServer())
+        .post('/auth/password-recovery')
+        .set('x-forwarded-for', '10.0.0.3')
+        .send({
+          email: `missing${index}@example.com`,
+        })
+        .expect(204);
+    }
+
+    await request(httpServer())
+      .post('/auth/password-recovery')
+      .set('x-forwarded-for', '10.0.0.3')
+      .send({
+        email: 'missing-final@example.com',
+      })
+      .expect(429);
+  });
 });

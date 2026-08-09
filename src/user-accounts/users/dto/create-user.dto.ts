@@ -5,4 +5,6 @@ export class CreateUserDto {
   isEmailConfirmed?: boolean;
   confirmationCode?: string | null;
   confirmationCodeExpiresAt?: Date | null;
+  passwordRecoveryCode?: string | null;
+  passwordRecoveryCodeExpiresAt?: Date | null;
 }

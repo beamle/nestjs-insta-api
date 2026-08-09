@@ -121,6 +121,30 @@ export class AuthService {
     return { accessToken };
   }
 
+  async passwordRecovery(dto: RegistrationEmailResendingDto) {
+    const user = await this.usersRepository.findByEmail(dto.email);
+
+    if (!user) {
+      return;
+    }
+
+    const passwordRecoveryCode = this.generateConfirmationCode();
+    const passwordRecoveryCodeExpiresAt = new Date(
+      Date.now() + 24 * 60 * 60 * 1000,
+    );
+
+    await this.usersRepository.updatePasswordRecoveryCode(
+      dto.email,
+      passwordRecoveryCode,
+      passwordRecoveryCodeExpiresAt,
+    );
+
+    await this.registrationEmailService.sendPasswordRecoveryCode(
+      dto.email,
+      passwordRecoveryCode,
+    );
+  }
+
   private generateConfirmationCode() {
     return randomBytes(6).toString('hex').toUpperCase();
   }

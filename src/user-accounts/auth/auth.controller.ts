@@ -41,4 +41,14 @@ export class AuthController {
   ): Promise<void> {
     await this.authService.resendConfirmationEmail(dto);
   }
+
+  @Post('password-recovery')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(RateLimitGuard)
+  async passwordRecovery(
+    @Body(new RegistrationEmailResendingValidationPipe())
+    dto: RegistrationEmailResendingDto,
+  ): Promise<void> {
+    await this.authService.passwordRecovery(dto);
+  }
 }

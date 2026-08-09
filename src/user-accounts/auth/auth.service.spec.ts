@@ -10,9 +10,11 @@ describe('AuthService', () => {
     create: jest.fn(),
     confirmEmail: jest.fn(),
     updateConfirmationCode: jest.fn(),
+    updatePasswordRecoveryCode: jest.fn(),
   };
   const registrationEmailService = {
     sendConfirmationCode: jest.fn(),
+    sendPasswordRecoveryCode: jest.fn(),
   };
 
   let service: AuthService;
@@ -155,5 +157,41 @@ describe('AuthService', () => {
         password: 'wrong',
       }),
     ).rejects.toBeInstanceOf(UnauthorizedException);
+  });
+
+  it('returns 204 behavior for non-existing password recovery email', async () => {
+    usersRepository.findByEmail.mockResolvedValue(null);
+
+    await expect(
+      service.passwordRecovery({
+        email: 'missing@example.com',
+      }),
+    ).resolves.toBeUndefined();
+
+    expect(usersRepository.updatePasswordRecoveryCode).not.toHaveBeenCalled();
+    expect(registrationEmailService.sendPasswordRecoveryCode).not.toHaveBeenCalled();
+  });
+
+  it('sends recovery email for existing user', async () => {
+    usersRepository.findByEmail.mockResolvedValue({
+      id: '1',
+    });
+    usersRepository.updatePasswordRecoveryCode.mockResolvedValue(undefined);
+
+    await expect(
+      service.passwordRecovery({
+        email: 'existing@example.com',
+      }),
+    ).resolves.toBeUndefined();
+
+    expect(usersRepository.updatePasswordRecoveryCode).toHaveBeenCalledWith(
+      'existing@example.com',
+      expect.any(String),
+      expect.any(Date),
+    );
+    expect(registrationEmailService.sendPasswordRecoveryCode).toHaveBeenCalledWith(
+      'existing@example.com',
+      expect.any(String),
+    );
   });
 });

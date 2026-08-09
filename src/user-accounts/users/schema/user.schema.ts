@@ -21,6 +21,12 @@ export class User {
   @Prop({ type: Date, required: false, default: null })
   confirmationCodeExpiresAt: Date | null;
 
+  @Prop({ type: String, required: false, default: null })
+  passwordRecoveryCode: string | null;
+
+  @Prop({ type: Date, required: false, default: null })
+  passwordRecoveryCodeExpiresAt: Date | null;
+
   createdAt: Date;
 
   updatedAt: Date;
@@ -32,6 +38,8 @@ export class User {
     isEmailConfirmed?: boolean;
     confirmationCode?: string | null;
     confirmationCodeExpiresAt?: Date | null;
+    passwordRecoveryCode?: string | null;
+    passwordRecoveryCodeExpiresAt?: Date | null;
   }): User {
     const user = new User();
     user.login = dto.login;
@@ -40,6 +48,8 @@ export class User {
     user.isEmailConfirmed = dto.isEmailConfirmed ?? false;
     user.confirmationCode = dto.confirmationCode ?? null;
     user.confirmationCodeExpiresAt = dto.confirmationCodeExpiresAt ?? null;
+    user.passwordRecoveryCode = dto.passwordRecoveryCode ?? null;
+    user.passwordRecoveryCodeExpiresAt = dto.passwordRecoveryCodeExpiresAt ?? null;
     return user;
   }
 }
