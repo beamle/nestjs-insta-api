@@ -7,10 +7,12 @@ describe('AuthService', () => {
     findByEmail: jest.fn(),
     findByLoginOrEmail: jest.fn(),
     findByConfirmationCode: jest.fn(),
+    findByPasswordRecoveryCode: jest.fn(),
     create: jest.fn(),
     confirmEmail: jest.fn(),
     updateConfirmationCode: jest.fn(),
     updatePasswordRecoveryCode: jest.fn(),
+    updatePasswordWithRecoveryCode: jest.fn(),
   };
   const registrationEmailService = {
     sendConfirmationCode: jest.fn(),
@@ -193,5 +195,36 @@ describe('AuthService', () => {
       'existing@example.com',
       expect.any(String),
     );
+  });
+
+  it('sets new password by valid recovery code', async () => {
+    usersRepository.findByPasswordRecoveryCode.mockResolvedValue({
+      _id: { toString: () => 'user-id' },
+      passwordRecoveryCodeExpiresAt: new Date(Date.now() + 60_000),
+    });
+    usersRepository.updatePasswordWithRecoveryCode.mockResolvedValue(undefined);
+
+    await expect(
+      service.setNewPassword({
+        newPassword: 'newPassword1',
+        recoveryCode: 'RECOVERY',
+      }),
+    ).resolves.toBeUndefined();
+
+    expect(usersRepository.updatePasswordWithRecoveryCode).toHaveBeenCalledWith(
+      'user-id',
+      'newPassword1',
+    );
+  });
+
+  it('rejects invalid or expired recovery code', async () => {
+    usersRepository.findByPasswordRecoveryCode.mockResolvedValue(null);
+
+    await expect(
+      service.setNewPassword({
+        newPassword: 'newPassword1',
+        recoveryCode: 'BAD',
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
   });
 });

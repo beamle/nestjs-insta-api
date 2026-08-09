@@ -3,7 +3,9 @@ import { AuthService } from './auth.service';
 import { RegistrationUserDto } from './dto/registration-user.dto';
 import { RegistrationConfirmationDto } from './dto/registration-confirmation.dto';
 import { RegistrationEmailResendingDto } from './dto/registration-email-resending.dto';
+import { NewPasswordDto } from './dto/new-password.dto';
 import { RateLimitGuard } from './guards/rate-limit.guard';
+import { NewPasswordValidationPipe } from './pipes/new-password-validation.pipe';
 import { RegistrationEmailResendingValidationPipe } from './pipes/registration-email-resending-validation.pipe';
 import { RegistrationConfirmationValidationPipe } from './pipes/registration-confirmation-validation.pipe';
 import { RegistrationValidationPipe } from './pipes/registration-validation.pipe';
@@ -50,5 +52,14 @@ export class AuthController {
     dto: RegistrationEmailResendingDto,
   ): Promise<void> {
     await this.authService.passwordRecovery(dto);
+  }
+
+  @Post('new-password')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(RateLimitGuard)
+  async newPassword(
+    @Body(new NewPasswordValidationPipe()) dto: NewPasswordDto,
+  ): Promise<void> {
+    await this.authService.setNewPassword(dto);
   }
 }

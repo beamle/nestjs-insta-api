@@ -241,4 +241,71 @@ describe('Auth API (e2e)', () => {
       })
       .expect(429);
   });
+
+  it('POST /auth/new-password returns 204 for valid recovery code', async () => {
+    const payload = {
+      login: 'recover-user',
+      password: 'secret12',
+      email: 'recover-user@example.com',
+    };
+
+    await request(httpServer()).post('/auth/registration').send(payload).expect(204);
+    await request(httpServer())
+      .post('/auth/password-recovery')
+      .send({ email: payload.email })
+      .expect(204);
+
+    const usersRepository = moduleFixture.get(UsersRepository);
+    const user = await usersRepository.findByEmail(payload.email);
+
+    await request(httpServer())
+      .post('/auth/new-password')
+      .send({
+        newPassword: 'newSecret12',
+        recoveryCode: user?.passwordRecoveryCode,
+      })
+      .expect(204);
+  });
+
+  it('POST /auth/new-password returns 400 for invalid input', async () => {
+    await request(httpServer())
+      .post('/auth/new-password')
+      .send({
+        newPassword: '123',
+        recoveryCode: '',
+      })
+      .expect(400);
+  });
+
+  it('POST /auth/new-password returns 400 for invalid recovery code', async () => {
+    await request(httpServer())
+      .post('/auth/new-password')
+      .send({
+        newPassword: 'newSecret12',
+        recoveryCode: 'WRONG-CODE',
+      })
+      .expect(400);
+  });
+
+  it('POST /auth/new-password returns 429 after too many attempts', async () => {
+    for (let index = 0; index < 5; index += 1) {
+      await request(httpServer())
+        .post('/auth/new-password')
+        .set('x-forwarded-for', '10.0.0.4')
+        .send({
+          newPassword: 'newSecret12',
+          recoveryCode: 'WRONG-CODE',
+        })
+        .expect(400);
+    }
+
+    await request(httpServer())
+      .post('/auth/new-password')
+      .set('x-forwarded-for', '10.0.0.4')
+      .send({
+        newPassword: 'newSecret12',
+        recoveryCode: 'WRONG-CODE',
+      })
+      .expect(429);
+  });
 });

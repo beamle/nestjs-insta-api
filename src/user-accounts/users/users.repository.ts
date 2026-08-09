@@ -40,6 +40,10 @@ export class UsersRepository {
     return this.userModel.findOne({ confirmationCode }).exec();
   }
 
+  async findByPasswordRecoveryCode(passwordRecoveryCode: string) {
+    return this.userModel.findOne({ passwordRecoveryCode }).exec();
+  }
+
   async findAll(query: GetAllUsersDto) {
     const pageNumber = Number(query.pageNumber ?? 1);
     const pageSize = Number(query.pageSize ?? 10);
@@ -136,6 +140,22 @@ export class UsersRepository {
           $set: {
             passwordRecoveryCode,
             passwordRecoveryCodeExpiresAt,
+          },
+        },
+        { new: true },
+      )
+      .exec();
+  }
+
+  async updatePasswordWithRecoveryCode(id: string, newPassword: string) {
+    return this.userModel
+      .findByIdAndUpdate(
+        toObjectId(id),
+        {
+          $set: {
+            password: newPassword,
+            passwordRecoveryCode: null,
+            passwordRecoveryCodeExpiresAt: null,
           },
         },
         { new: true },

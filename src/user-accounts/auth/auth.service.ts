@@ -7,6 +7,7 @@ import { RegistrationEmailService } from './email/registration-email.service';
 import { RegistrationConfirmationDto } from './dto/registration-confirmation.dto';
 import { RegistrationEmailResendingDto } from './dto/registration-email-resending.dto';
 import { LoginDto } from './dto/login.dto';
+import { NewPasswordDto } from './dto/new-password.dto';
 
 type ValidationError = { message: string; field: string };
 
@@ -142,6 +143,32 @@ export class AuthService {
     await this.registrationEmailService.sendPasswordRecoveryCode(
       dto.email,
       passwordRecoveryCode,
+    );
+  }
+
+  async setNewPassword(dto: NewPasswordDto) {
+    const user = await this.usersRepository.findByPasswordRecoveryCode(
+      dto.recoveryCode,
+    );
+
+    if (
+      !user ||
+      !user.passwordRecoveryCodeExpiresAt ||
+      user.passwordRecoveryCodeExpiresAt.getTime() < Date.now()
+    ) {
+      throw new BadRequestException({
+        errorsMessages: [
+          {
+            field: 'recoveryCode',
+            message: 'recovery code is invalid or expired',
+          },
+        ],
+      });
+    }
+
+    await this.usersRepository.updatePasswordWithRecoveryCode(
+      user._id.toString(),
+      dto.newPassword,
     );
   }
 
