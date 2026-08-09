@@ -7,10 +7,10 @@ export class RegistrationEmailService {
   private readonly from = process.env.SMTP_FROM ?? 'no-reply@example.com';
   private readonly confirmationBaseUrl =
     process.env.CONFIRMATION_LINK_BASE_URL ??
-    'https://some-front.com/confirm-registration';
+    'https://somesite.com/confirm-email';
   private readonly passwordRecoveryBaseUrl =
     process.env.PASSWORD_RECOVERY_LINK_BASE_URL ??
-    'https://some-front.com/password-recovery';
+    'https://somesite.com/password-recovery';
 
   async sendConfirmationCode(email: string, confirmationCode: string) {
     const confirmationLink = `${this.confirmationBaseUrl}?code=${encodeURIComponent(
@@ -21,8 +21,8 @@ export class RegistrationEmailService {
       from: this.from,
       to: email,
       subject: 'Email confirmation',
-      text: `Confirm your email: ${confirmationLink}`,
-      html: `<p>Confirm your email: <a href="${confirmationLink}">${confirmationLink}</a></p>`,
+      text: `https://somesite.com/confirm-email?code=${confirmationCode}`,
+      html: `<h1>Thank for your registration</h1><p>To finish registration please follow the link below:<a href='${confirmationLink}'>complete registration</a></p>`,
     });
   }
 
@@ -35,8 +35,8 @@ export class RegistrationEmailService {
       from: this.from,
       to: email,
       subject: 'Password recovery',
-      text: `Reset your password: ${recoveryLink}`,
-      html: `<p>Reset your password: <a href="${recoveryLink}">${recoveryLink}</a></p>`,
+      text: `https://somesite.com/password-recovery?recoveryCode=${recoveryCode}`,
+      html: `<h1>Password recovery</h1><p>To recover your password please follow the link below:<a href='${recoveryLink}'>recovery password</a></p>`,
     });
   }
 

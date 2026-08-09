@@ -1,3 +1,3 @@
 export class RegistrationConfirmationDto {
-  confirmationCode: string;
+  code: string;
 }

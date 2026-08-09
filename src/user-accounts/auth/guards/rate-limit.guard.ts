@@ -1,11 +1,11 @@
 import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable, } from '@nestjs/common';
 import { Request } from 'express';
+import { RateLimitService } from './rate-limit.service';
 
 @Injectable()
 export class RateLimitGuard implements CanActivate {
-  private readonly attemptsByIp = new Map<string, number[]>();
-  private readonly windowMs = 10_000;
-  private readonly maxAttempts = 5;
+  constructor(private readonly rateLimitService: RateLimitService) {
+  }
 
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest<Request>();
@@ -16,16 +16,11 @@ export class RateLimitGuard implements CanActivate {
           : null)) ||
       'unknown';
 
-    const now = Date.now();
-    const attempts = this.attemptsByIp.get(ip) ?? [];
-    const recentAttempts = attempts.filter((time) => now - time < this.windowMs);
+    const routeKey = `${request.method}:${request.route?.path ?? request.path}:${ip}`;
 
-    if (recentAttempts.length >= this.maxAttempts) {
+    if (!this.rateLimitService.registerAttempt(routeKey, Date.now())) {
       throw new HttpException('Too Many Requests', HttpStatus.TOO_MANY_REQUESTS);
     }
-
-    recentAttempts.push(now);
-    this.attemptsByIp.set(ip, recentAttempts);
 
     return true;
   }

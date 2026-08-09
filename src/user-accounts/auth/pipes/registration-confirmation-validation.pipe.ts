@@ -9,10 +9,10 @@ export class RegistrationConfirmationValidationPipe implements PipeTransform {
     const dto = value as Record<string, unknown>;
     const errors: ValidationError[] = [];
 
-    if (typeof dto.confirmationCode !== 'string' || dto.confirmationCode.length === 0) {
+    if (typeof dto.code !== 'string' || dto.code.length === 0) {
       errors.push({
-        field: 'confirmationCode',
-        message: 'confirmationCode must be a non-empty string',
+        field: 'code',
+        message: 'code must be a non-empty string',
       });
     }
 
@@ -21,7 +21,7 @@ export class RegistrationConfirmationValidationPipe implements PipeTransform {
     }
 
     return {
-      confirmationCode: dto.confirmationCode as string,
+      code: dto.code as string,
     };
   }
 }

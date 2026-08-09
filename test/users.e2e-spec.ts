@@ -7,6 +7,7 @@ import { AppModule } from '../src/app/app.module';
 describe('Users API (e2e)', () => {
   let app: INestApplication;
   let userId: string;
+  const adminAuth = `Basic ${Buffer.from('admin:qwerty').toString('base64')}`;
 
   const httpServer = () => app.getHttpServer() as unknown as App;
 
@@ -25,9 +26,31 @@ describe('Users API (e2e)', () => {
     await app.close();
   }, 10000);
 
+  it('POST /users - returns 401 without auth', async () => {
+    await request(httpServer()).post('/users').send({}).expect(401);
+  }, 10000);
+
+  it('POST /users - returns 400 for invalid body', async () => {
+    const response = await request(httpServer())
+      .post('/users')
+      .set('Authorization', adminAuth)
+      .send({
+        login: 'sh',
+        password: 'length_21-weqweqweqwq',
+        email: 'someemail@gg.com',
+      })
+      .expect(400);
+
+    expect(response.body.errorsMessages).toEqual([
+      expect.objectContaining({ field: 'login' }),
+      expect.objectContaining({ field: 'password' }),
+    ]);
+  }, 10000);
+
   it('POST /users - creates a user', async () => {
     const response = await request(httpServer())
       .post('/users')
+      .set('Authorization', adminAuth)
       .send({
         login: 'B73',
         password: 'string',
@@ -76,12 +99,16 @@ describe('Users API (e2e)', () => {
   }, 10000);
 
   it('DELETE /users/:id - deletes a user', async () => {
-    await request(httpServer()).delete(`/users/${userId}`).expect(204);
+    await request(httpServer())
+      .delete(`/users/${userId}`)
+      .set('Authorization', adminAuth)
+      .expect(204);
   }, 10000);
 
   it('DELETE /users/:id - returns 404 for missing user', async () => {
     await request(httpServer())
       .delete('/users/507f1f77bcf86cd799439999')
+      .set('Authorization', adminAuth)
       .expect(404);
   }, 10000);
 });

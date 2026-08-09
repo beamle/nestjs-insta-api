@@ -26,11 +26,9 @@ describe('RegistrationEmailService', () => {
     expect(sendMail).toHaveBeenCalledWith(
       expect.objectContaining({
         to: 'test@example.com',
-        text: expect.stringContaining(
-          'https://some-front.com/confirm-registration?code=ABC123',
-        ),
+        text: 'https://somesite.com/confirm-email?code=ABC123',
         html: expect.stringContaining(
-          'https://some-front.com/confirm-registration?code=ABC123',
+          "href='https://somesite.com/confirm-email?code=ABC123'",
         ),
       }),
     );
@@ -44,11 +42,9 @@ describe('RegistrationEmailService', () => {
     expect(sendMail).toHaveBeenCalledWith(
       expect.objectContaining({
         to: 'test@example.com',
-        text: expect.stringContaining(
-          'https://some-front.com/password-recovery?recoveryCode=REC123',
-        ),
+        text: 'https://somesite.com/password-recovery?recoveryCode=REC123',
         html: expect.stringContaining(
-          'https://some-front.com/password-recovery?recoveryCode=REC123',
+          "href='https://somesite.com/password-recovery?recoveryCode=REC123'",
         ),
       }),
     );

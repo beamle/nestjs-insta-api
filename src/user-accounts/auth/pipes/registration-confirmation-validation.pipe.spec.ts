@@ -11,10 +11,10 @@ describe('RegistrationConfirmationValidationPipe', () => {
   it('accepts a valid confirmation code', () => {
     expect(
       pipe.transform({
-        confirmationCode: 'ABC123',
+        code: 'ABC123',
       }),
     ).toEqual({
-      confirmationCode: 'ABC123',
+      code: 'ABC123',
     });
   });
 

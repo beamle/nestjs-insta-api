@@ -83,7 +83,7 @@ describe('AuthService', () => {
 
     await expect(
       service.confirmRegistration({
-        confirmationCode: 'ABC123',
+        code: 'ABC123',
       }),
     ).resolves.toBeUndefined();
 
@@ -95,7 +95,7 @@ describe('AuthService', () => {
 
     await expect(
       service.confirmRegistration({
-        confirmationCode: 'BADCODE',
+        code: 'BADCODE',
       }),
     ).rejects.toBeInstanceOf(BadRequestException);
   });

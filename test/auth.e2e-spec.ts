@@ -45,7 +45,7 @@ describe('Auth API (e2e)', () => {
 
   it('POST /auth/registration-confirmation returns 204 for valid code', async () => {
     const payload = {
-      login: 'tester-confirm',
+      login: 'testconf',
       password: 'secret12',
       email: 'tester-confirm@example.com',
     };
@@ -61,7 +61,7 @@ describe('Auth API (e2e)', () => {
     await request(httpServer())
       .post('/auth/registration-confirmation')
       .send({
-        confirmationCode: user?.confirmationCode,
+        code: user?.confirmationCode,
       })
       .expect(204);
   });
@@ -129,7 +129,7 @@ describe('Auth API (e2e)', () => {
     const response = await request(httpServer())
       .post('/auth/registration-confirmation')
       .send({
-        confirmationCode: 'INVALID-CODE',
+        code: 'INVALID-CODE',
       })
       .expect(400);
 
@@ -138,7 +138,7 @@ describe('Auth API (e2e)', () => {
 
   it('POST /auth/registration-confirmation returns 429 after too many attempts', async () => {
     const payload = {
-      login: 'tester-rate',
+      login: 'testrate',
       password: 'secret12',
       email: 'tester-rate@example.com',
     };
@@ -150,7 +150,7 @@ describe('Auth API (e2e)', () => {
         .post('/auth/registration-confirmation')
         .set('x-forwarded-for', '10.0.0.2')
         .send({
-          confirmationCode: 'INVALID-CODE',
+          code: 'INVALID-CODE',
         })
         .expect(400);
     }
@@ -159,7 +159,7 @@ describe('Auth API (e2e)', () => {
       .post('/auth/registration-confirmation')
       .set('x-forwarded-for', '10.0.0.2')
       .send({
-        confirmationCode: 'INVALID-CODE',
+        code: 'INVALID-CODE',
       })
       .expect(429);
   }, 10000);
@@ -244,7 +244,7 @@ describe('Auth API (e2e)', () => {
 
   it('POST /auth/new-password returns 204 for valid recovery code', async () => {
     const payload = {
-      login: 'recover-user',
+      login: 'recoverusr',
       password: 'secret12',
       email: 'recover-user@example.com',
     };

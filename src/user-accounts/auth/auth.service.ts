@@ -55,7 +55,7 @@ export class AuthService {
 
   async confirmRegistration(dto: RegistrationConfirmationDto) {
     const user = await this.usersRepository.findByConfirmationCode(
-      dto.confirmationCode,
+      dto.code,
     );
 
     if (
@@ -67,7 +67,7 @@ export class AuthService {
       throw new BadRequestException({
         errorsMessages: [
           {
-            field: 'confirmationCode',
+            field: 'code',
             message: 'confirmation code is invalid, expired, or already used',
           },
         ],
