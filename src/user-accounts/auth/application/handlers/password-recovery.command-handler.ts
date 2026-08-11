@@ -1,13 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { CommandHandler, EventBus } from '../../../../common/cqrs';
+import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { PasswordRecoveryCommand } from '../commands/password-recovery.command';
 import { UsersRepository } from '../../../users/users.repository';
 import { RegistrationEmailService } from '../../email/registration-email.service';
 import { PasswordRecoveryInitiatedEvent } from '../events';
 import { randomBytes } from 'crypto';
 
-@Injectable()
-export class PasswordRecoveryCommandHandler implements CommandHandler<PasswordRecoveryCommand, void> {
+@CommandHandler(PasswordRecoveryCommand)
+export class PasswordRecoveryCommandHandler implements ICommandHandler<PasswordRecoveryCommand> {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly registrationEmailService: RegistrationEmailService,
@@ -15,7 +14,7 @@ export class PasswordRecoveryCommandHandler implements CommandHandler<PasswordRe
   ) {
   }
 
-  async handle(command: PasswordRecoveryCommand): Promise<void> {
+  async execute(command: PasswordRecoveryCommand): Promise<void> {
     const user = await this.usersRepository.findByEmail(command.dto.email);
 
     if (!user) {
@@ -39,7 +38,11 @@ export class PasswordRecoveryCommandHandler implements CommandHandler<PasswordRe
     );
 
     await this.eventBus.publish(
-      new PasswordRecoveryInitiatedEvent(command.dto.email, passwordRecoveryCode),
+      new PasswordRecoveryInitiatedEvent(
+        user._id.toString(),
+        command.dto.email,
+        passwordRecoveryCode,
+      ),
     );
   }
 

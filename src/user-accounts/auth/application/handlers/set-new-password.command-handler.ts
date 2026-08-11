@@ -1,18 +1,18 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { CommandHandler, EventBus } from '../../../../common/cqrs';
+import { BadRequestException } from '@nestjs/common';
+import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { SetNewPasswordCommand } from '../commands/set-new-password.command';
 import { UsersRepository } from '../../../users/users.repository';
 import { PasswordResetEvent } from '../events';
 
-@Injectable()
-export class SetNewPasswordCommandHandler implements CommandHandler<SetNewPasswordCommand, void> {
+@CommandHandler(SetNewPasswordCommand)
+export class SetNewPasswordCommandHandler implements ICommandHandler<SetNewPasswordCommand> {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly eventBus: EventBus,
   ) {
   }
 
-  async handle(command: SetNewPasswordCommand): Promise<void> {
+  async execute(command: SetNewPasswordCommand): Promise<void> {
     const user = await this.usersRepository.findByPasswordRecoveryCode(
       command.dto.recoveryCode,
     );

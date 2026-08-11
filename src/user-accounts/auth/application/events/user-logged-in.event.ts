@@ -1,12 +1,9 @@
-import { DomainEvent } from '../../../../common/cqrs';
+import { IEvent } from '@nestjs/cqrs';
 
-export class UserLoggedInEvent extends DomainEvent {
-  readonly type = 'UserLoggedInEvent';
-
+export class UserLoggedInEvent implements IEvent {
   constructor(
     public readonly userId: string,
     public readonly email: string,
   ) {
-    super();
   }
 }

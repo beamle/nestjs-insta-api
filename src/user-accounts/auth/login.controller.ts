@@ -1,7 +1,7 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { CommandBus } from '@nestjs/cqrs';
 import { LoginDto } from './dto/login.dto';
 import { LoginValidationPipe } from './pipes/login-validation.pipe';
-import { CommandBus } from '../../common/cqrs';
 import { LoginCommand } from './application/commands';
 
 @Controller('auth')

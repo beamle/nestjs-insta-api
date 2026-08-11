@@ -1,4 +1,5 @@
 import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
+import { CommandBus } from '@nestjs/cqrs';
 import { RegistrationUserDto } from './dto/registration-user.dto';
 import { RegistrationConfirmationDto } from './dto/registration-confirmation.dto';
 import { RegistrationEmailResendingDto } from './dto/registration-email-resending.dto';
@@ -8,7 +9,6 @@ import { NewPasswordValidationPipe } from './pipes/new-password-validation.pipe'
 import { RegistrationEmailResendingValidationPipe } from './pipes/registration-email-resending-validation.pipe';
 import { RegistrationConfirmationValidationPipe } from './pipes/registration-confirmation-validation.pipe';
 import { RegistrationValidationPipe } from './pipes/registration-validation.pipe';
-import { CommandBus } from '../../common/cqrs';
 import {
   ConfirmEmailCommand,
   PasswordRecoveryCommand,

@@ -1,9 +1,9 @@
-import { DomainEvent } from '../../../../common/cqrs';
+import { IEvent } from '@nestjs/cqrs';
 
-export class PasswordResetEvent extends DomainEvent {
-  readonly type = 'PasswordResetEvent';
-
-  constructor(public readonly userId: string, public readonly email: string) {
-    super();
+export class PasswordResetEvent implements IEvent {
+  constructor(
+    public readonly userId: string,
+    public readonly email: string,
+  ) {
   }
 }

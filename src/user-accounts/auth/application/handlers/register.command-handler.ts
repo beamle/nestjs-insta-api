@@ -1,5 +1,5 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { CommandHandler, EventBus } from '../../../../common/cqrs';
+import { BadRequestException } from '@nestjs/common';
+import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { RegisterCommand } from '../commands/register.command';
 import { UsersRepository } from '../../../users/users.repository';
 import { RegistrationEmailService } from '../../email/registration-email.service';
@@ -8,8 +8,8 @@ import { randomBytes } from 'crypto';
 
 type ValidationError = { message: string; field: string };
 
-@Injectable()
-export class RegisterCommandHandler implements CommandHandler<RegisterCommand, void> {
+@CommandHandler(RegisterCommand)
+export class RegisterCommandHandler implements ICommandHandler<RegisterCommand> {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly registrationEmailService: RegistrationEmailService,
@@ -17,7 +17,7 @@ export class RegisterCommandHandler implements CommandHandler<RegisterCommand, v
   ) {
   }
 
-  async handle(command: RegisterCommand): Promise<void> {
+  async execute(command: RegisterCommand): Promise<void> {
     const dto = command.dto;
     const [loginUser, emailUser] = await Promise.all([
       this.usersRepository.findByLogin(dto.login),

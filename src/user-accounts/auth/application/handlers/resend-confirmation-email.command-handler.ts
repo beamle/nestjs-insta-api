@@ -1,13 +1,13 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { CommandHandler, EventBus } from '../../../../common/cqrs';
+import { BadRequestException } from '@nestjs/common';
+import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { ResendConfirmationEmailCommand } from '../commands/resend-confirmation-email.command';
 import { UsersRepository } from '../../../users/users.repository';
 import { RegistrationEmailService } from '../../email/registration-email.service';
 import { ConfirmationEmailResentEvent } from '../events';
 import { randomBytes } from 'crypto';
 
-@Injectable()
-export class ResendConfirmationEmailCommandHandler implements CommandHandler<ResendConfirmationEmailCommand, void> {
+@CommandHandler(ResendConfirmationEmailCommand)
+export class ResendConfirmationEmailCommandHandler implements ICommandHandler<ResendConfirmationEmailCommand> {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly registrationEmailService: RegistrationEmailService,
@@ -15,7 +15,7 @@ export class ResendConfirmationEmailCommandHandler implements CommandHandler<Res
   ) {
   }
 
-  async handle(command: ResendConfirmationEmailCommand): Promise<void> {
+  async execute(command: ResendConfirmationEmailCommand): Promise<void> {
     const user = await this.usersRepository.findByEmail(command.dto.email);
 
     if (!user || user.isEmailConfirmed) {
@@ -44,7 +44,11 @@ export class ResendConfirmationEmailCommandHandler implements CommandHandler<Res
     );
 
     await this.eventBus.publish(
-      new ConfirmationEmailResentEvent(command.dto.email, confirmationCode),
+      new ConfirmationEmailResentEvent(
+        user._id.toString(),
+        command.dto.email,
+        confirmationCode,
+      ),
     );
   }
 
