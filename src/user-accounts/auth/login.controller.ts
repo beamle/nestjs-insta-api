@@ -1,11 +1,12 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { LoginValidationPipe } from './pipes/login-validation.pipe';
+import { CommandBus } from '../../common/cqrs';
+import { LoginCommand } from './application/commands';
 
 @Controller('auth')
 export class LoginController {
-  constructor(private readonly authService: AuthService) {
+  constructor(private readonly commandBus: CommandBus) {
   }
 
   @Post('login')
@@ -13,6 +14,6 @@ export class LoginController {
   async login(
     @Body(new LoginValidationPipe()) dto: LoginDto,
   ): Promise<{ accessToken: string }> {
-    return this.authService.login(dto);
+    return this.commandBus.execute(new LoginCommand(dto));
   }
 }

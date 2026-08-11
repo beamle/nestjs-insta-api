@@ -1,5 +1,4 @@
 import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
-import { AuthService } from './auth.service';
 import { RegistrationUserDto } from './dto/registration-user.dto';
 import { RegistrationConfirmationDto } from './dto/registration-confirmation.dto';
 import { RegistrationEmailResendingDto } from './dto/registration-email-resending.dto';
@@ -9,10 +8,18 @@ import { NewPasswordValidationPipe } from './pipes/new-password-validation.pipe'
 import { RegistrationEmailResendingValidationPipe } from './pipes/registration-email-resending-validation.pipe';
 import { RegistrationConfirmationValidationPipe } from './pipes/registration-confirmation-validation.pipe';
 import { RegistrationValidationPipe } from './pipes/registration-validation.pipe';
+import { CommandBus } from '../../common/cqrs';
+import {
+  ConfirmEmailCommand,
+  PasswordRecoveryCommand,
+  RegisterCommand,
+  ResendConfirmationEmailCommand,
+  SetNewPasswordCommand,
+} from './application/commands';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {
+  constructor(private readonly commandBus: CommandBus) {
   }
 
   @Post('registration')
@@ -21,7 +28,7 @@ export class AuthController {
   async register(
     @Body(new RegistrationValidationPipe()) dto: RegistrationUserDto,
   ): Promise<void> {
-    await this.authService.register(dto);
+    await this.commandBus.execute(new RegisterCommand(dto));
   }
 
   @Post('registration-confirmation')
@@ -31,7 +38,7 @@ export class AuthController {
     @Body(new RegistrationConfirmationValidationPipe())
     dto: RegistrationConfirmationDto,
   ): Promise<void> {
-    await this.authService.confirmRegistration(dto);
+    await this.commandBus.execute(new ConfirmEmailCommand(dto));
   }
 
   @Post('registration-email-resending')
@@ -41,7 +48,7 @@ export class AuthController {
     @Body(new RegistrationEmailResendingValidationPipe())
     dto: RegistrationEmailResendingDto,
   ): Promise<void> {
-    await this.authService.resendConfirmationEmail(dto);
+    await this.commandBus.execute(new ResendConfirmationEmailCommand(dto));
   }
 
   @Post('password-recovery')
@@ -51,7 +58,7 @@ export class AuthController {
     @Body(new RegistrationEmailResendingValidationPipe())
     dto: RegistrationEmailResendingDto,
   ): Promise<void> {
-    await this.authService.passwordRecovery(dto);
+    await this.commandBus.execute(new PasswordRecoveryCommand(dto));
   }
 
   @Post('new-password')
@@ -60,6 +67,6 @@ export class AuthController {
   async newPassword(
     @Body(new NewPasswordValidationPipe()) dto: NewPasswordDto,
   ): Promise<void> {
-    await this.authService.setNewPassword(dto);
+    await this.commandBus.execute(new SetNewPasswordCommand(dto));
   }
 }
