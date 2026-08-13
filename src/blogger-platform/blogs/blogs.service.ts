@@ -1,18 +1,27 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Body, Injectable, NotFoundException, Post } from '@nestjs/common';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
 import { BlogsRepository } from './blogs.repository';
 import { BlogsQueryDto } from './dto/get-all-blogs.dto';
 import { BlogMapper } from './mappers/blogs.mapper';
+import { CreatePostForBlogDto } from './dto/create-post-for-blog.dto';
+import { PostsRepository } from '../posts/posts.repository';
+import { PostsService } from '../posts/posts.service';
 
 @Injectable()
 export class BlogsService {
-  constructor(private readonly blogsRepository: BlogsRepository) {
-  }
+  constructor(
+    private readonly blogsRepository: BlogsRepository,
+    private readonly postsService: PostsService,
+  ) {}
 
   async create(createBlogDto: CreateBlogDto) {
     const blog = await this.blogsRepository.create(createBlogDto);
     return BlogMapper.toViewModel(blog);
+  }
+
+  async createPostForBlog(blogId: string, createPostDto: CreatePostForBlogDto) {
+    return this.postsService.createForBlog(blogId, createPostDto);
   }
 
   async findAll(query: BlogsQueryDto) {
@@ -33,6 +42,10 @@ export class BlogsService {
     const blog = await this.blogsRepository.findOne(id);
     if (!blog) throw new NotFoundException(`No such blog with id: ${id}`);
     return BlogMapper.toViewModel(blog);
+  }
+
+  async findAllPostsForBlog(blogId: string, query: BlogsQueryDto) {
+    return this.postsService.findAllByBlog(blogId, query);
   }
 
   async update(id: string, updateBlogDto: UpdateBlogDto) {
