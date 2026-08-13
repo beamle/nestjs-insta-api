@@ -3,7 +3,6 @@ import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { ResendConfirmationEmailCommand } from '../commands/resend-confirmation-email.command';
 import { UsersRepository } from '../../../users/users.repository';
 import { RegistrationEmailService } from '../../email/registration-email.service';
-import { ConfirmationEmailResentEvent } from '../events';
 import { randomBytes } from 'crypto';
 
 @CommandHandler(ResendConfirmationEmailCommand)
@@ -41,14 +40,6 @@ export class ResendConfirmationEmailCommandHandler implements ICommandHandler<Re
     await this.registrationEmailService.sendConfirmationCode(
       command.dto.email,
       confirmationCode,
-    );
-
-    await this.eventBus.publish(
-      new ConfirmationEmailResentEvent(
-        user._id.toString(),
-        command.dto.email,
-        confirmationCode,
-      ),
     );
   }
 

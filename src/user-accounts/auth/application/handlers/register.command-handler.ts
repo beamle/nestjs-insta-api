@@ -3,7 +3,6 @@ import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { RegisterCommand } from '../commands/register.command';
 import { UsersRepository } from '../../../users/users.repository';
 import { RegistrationEmailService } from '../../email/registration-email.service';
-import { UserRegisteredEvent } from '../events';
 import { randomBytes } from 'crypto';
 
 type ValidationError = { message: string; field: string };
@@ -49,14 +48,6 @@ export class RegisterCommandHandler implements ICommandHandler<RegisterCommand> 
     await this.registrationEmailService.sendConfirmationCode(
       dto.email,
       confirmationCode,
-    );
-
-    await this.eventBus.publish(
-      new UserRegisteredEvent(
-        user._id.toString(),
-        dto.email,
-        confirmationCode,
-      ),
     );
   }
 

@@ -2,7 +2,6 @@ import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { PasswordRecoveryCommand } from '../commands/password-recovery.command';
 import { UsersRepository } from '../../../users/users.repository';
 import { RegistrationEmailService } from '../../email/registration-email.service';
-import { PasswordRecoveryInitiatedEvent } from '../events';
 import { randomBytes } from 'crypto';
 
 @CommandHandler(PasswordRecoveryCommand)
@@ -35,14 +34,6 @@ export class PasswordRecoveryCommandHandler implements ICommandHandler<PasswordR
     await this.registrationEmailService.sendPasswordRecoveryCode(
       command.dto.email,
       passwordRecoveryCode,
-    );
-
-    await this.eventBus.publish(
-      new PasswordRecoveryInitiatedEvent(
-        user._id.toString(),
-        command.dto.email,
-        passwordRecoveryCode,
-      ),
     );
   }
 

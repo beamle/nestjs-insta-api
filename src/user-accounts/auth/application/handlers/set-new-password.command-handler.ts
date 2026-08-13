@@ -2,7 +2,6 @@ import { BadRequestException } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { SetNewPasswordCommand } from '../commands/set-new-password.command';
 import { UsersRepository } from '../../../users/users.repository';
-import { PasswordResetEvent } from '../events';
 
 @CommandHandler(SetNewPasswordCommand)
 export class SetNewPasswordCommandHandler implements ICommandHandler<SetNewPasswordCommand> {
@@ -35,10 +34,6 @@ export class SetNewPasswordCommandHandler implements ICommandHandler<SetNewPassw
     await this.usersRepository.updatePasswordWithRecoveryCode(
       user._id.toString(),
       command.dto.newPassword,
-    );
-
-    await this.eventBus.publish(
-      new PasswordResetEvent(user._id.toString(), user.email),
     );
   }
 }

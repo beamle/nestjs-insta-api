@@ -2,7 +2,6 @@ import { BadRequestException } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { ConfirmEmailCommand } from '../commands/confirm-email.command';
 import { UsersRepository } from '../../../users/users.repository';
-import { EmailConfirmedEvent } from '../events';
 
 @CommandHandler(ConfirmEmailCommand)
 export class ConfirmEmailCommandHandler implements ICommandHandler<ConfirmEmailCommand> {
@@ -34,9 +33,5 @@ export class ConfirmEmailCommandHandler implements ICommandHandler<ConfirmEmailC
     }
 
     await this.usersRepository.confirmEmail(user._id.toString());
-
-    await this.eventBus.publish(
-      new EmailConfirmedEvent(user._id.toString(), user.email),
-    );
   }
 }

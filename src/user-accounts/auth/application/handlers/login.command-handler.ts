@@ -3,7 +3,6 @@ import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { LoginCommand } from '../commands/login.command';
 import { UsersRepository } from '../../../users/users.repository';
 import { sign } from 'jsonwebtoken';
-import { UserLoggedInEvent } from '../events';
 
 @CommandHandler(LoginCommand)
 export class LoginCommandHandler implements ICommandHandler<LoginCommand, { accessToken: string }> {
@@ -26,10 +25,6 @@ export class LoginCommandHandler implements ICommandHandler<LoginCommand, { acce
       { userId: user._id.toString() },
       process.env.JWT_SECRET ?? 'secret',
       { expiresIn: '5m' },
-    );
-
-    await this.eventBus.publish(
-      new UserLoggedInEvent(user._id.toString(), user.email),
     );
 
     return { accessToken };
