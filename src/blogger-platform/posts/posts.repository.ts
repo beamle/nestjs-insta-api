@@ -6,14 +6,14 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { GetAllPostsDto } from './dto/get-all-posts.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { toObjectId } from '../../helpers/helpers';
+import { LikeStatusDto } from './dto/like-status.dto';
 
 @Injectable()
 export class PostsRepository {
   constructor(
     @InjectModel(Post.name)
     private readonly postModel: Model<PostDocument>,
-  ) {
-  }
+  ) {}
 
   async create(createPostDto: CreatePostDto & { blogName: string }) {
     const post = new this.postModel({
@@ -66,5 +66,15 @@ export class PostsRepository {
 
   remove(id: string) {
     return this.postModel.deleteOne({ _id: toObjectId(id) }).exec();
+  }
+
+  async updateLikeStatus(postId: string, likeStatusDto: LikeStatusDto) {
+    return this.postModel
+      .findByIdAndUpdate(
+        toObjectId(postId),
+        { $set: { 'extendedLikesInfo.myStatus': likeStatusDto.likeStatus } },
+        { returnDocument: 'after' },
+      )
+      .exec();
   }
 }

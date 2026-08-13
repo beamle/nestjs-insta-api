@@ -1,13 +1,24 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { GetAllPostsDto } from './dto/get-all-posts.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { LikeStatusDto } from './dto/like-status.dto';
 
 @Controller('posts')
 export class PostsController {
-  constructor(private readonly postsService: PostsService) {
-  }
+  constructor(private readonly postsService: PostsService) {}
 
   @Post()
   create(@Body() createPostDto: CreatePostDto) {
@@ -37,5 +48,13 @@ export class PostsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: string): Promise<void> {
     await this.postsService.remove(id);
+  }
+
+  @Put(':postId/like-status')
+  async updateLikeStatus(
+    @Param('postId') postId: string,
+    @Body() dto: LikeStatusDto,
+  ): Promise<void> {
+    await this.postsService.updateLikeStatus(postId, dto);
   }
 }

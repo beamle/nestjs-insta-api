@@ -2,18 +2,18 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { CreatePostForBlogDto } from './dto/create-post-for-blog.dto';
 import { GetAllPostsDto } from './dto/get-all-posts.dto';
-import { UpdatePostDto } from './dto/update-post.dto';
 import { PostsRepository } from './posts.repository';
 import { BlogsRepository } from '../blogs/blogs.repository';
 import { PostsMapper } from './mappers/posts.mapper';
+import { UpdatePostDto } from './dto/update-post.dto';
+import { LikeStatusDto } from './dto/like-status.dto';
 
 @Injectable()
 export class PostsService {
   constructor(
     private readonly postsRepository: PostsRepository,
     private readonly blogsRepository: BlogsRepository,
-  ) {
-  }
+  ) {}
 
   async create(createPostDto: CreatePostDto) {
     return this.createForBlog(createPostDto.blogId, createPostDto);
@@ -105,6 +105,17 @@ export class PostsService {
 
     if (result.deletedCount === 0) {
       throw new NotFoundException(`No such post with id: ${id}`);
+    }
+  }
+
+  async updateLikeStatus(postId: string, likeStatusDto: LikeStatusDto) {
+    const updatedPost = await this.postsRepository.updateLikeStatus(
+      postId,
+      likeStatusDto,
+    );
+
+    if (!updatedPost) {
+      throw new NotFoundException(`No such post with id: ${postId}`);
     }
   }
 }
