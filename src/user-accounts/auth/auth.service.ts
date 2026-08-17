@@ -1,6 +1,9 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { randomBytes } from 'crypto';
-import { sign } from 'jsonwebtoken';
 import { UsersRepository } from '../users/users.repository';
 import { RegistrationUserDto } from './dto/registration-user.dto';
 import { RegistrationEmailService } from './email/registration-email.service';
@@ -16,8 +19,7 @@ export class AuthService {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly registrationEmailService: RegistrationEmailService,
-  ) {
-  }
+  ) {}
 
   async register(dto: RegistrationUserDto) {
     const [loginUser, emailUser] = await Promise.all([
@@ -38,7 +40,9 @@ export class AuthService {
     }
 
     const confirmationCode = this.generateConfirmationCode();
-    const confirmationCodeExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const confirmationCodeExpiresAt = new Date(
+      Date.now() + 24 * 60 * 60 * 1000,
+    );
 
     await this.usersRepository.create({
       ...dto,
@@ -54,9 +58,7 @@ export class AuthService {
   }
 
   async confirmRegistration(dto: RegistrationConfirmationDto) {
-    const user = await this.usersRepository.findByConfirmationCode(
-      dto.code,
-    );
+    const user = await this.usersRepository.findByConfirmationCode(dto.code);
 
     if (
       !user ||
@@ -92,7 +94,9 @@ export class AuthService {
     }
 
     const confirmationCode = this.generateConfirmationCode();
-    const confirmationCodeExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const confirmationCodeExpiresAt = new Date(
+      Date.now() + 24 * 60 * 60 * 1000,
+    );
 
     await this.usersRepository.updateConfirmationCode(
       dto.email,
@@ -104,22 +108,6 @@ export class AuthService {
       dto.email,
       confirmationCode,
     );
-  }
-
-  async login(dto: LoginDto) {
-    const user = await this.usersRepository.findByLoginOrEmail(dto.loginOrEmail);
-
-    if (!user || user.password !== dto.password) {
-      throw new UnauthorizedException();
-    }
-
-    const accessToken = sign(
-      { userId: user._id.toString() },
-      process.env.JWT_SECRET ?? 'secret',
-      { expiresIn: '5m' },
-    );
-
-    return { accessToken };
   }
 
   async passwordRecovery(dto: RegistrationEmailResendingDto) {
