@@ -7,6 +7,7 @@ import { BlogsRepository } from '../blogs/blogs.repository';
 import { PostsMapper } from './mappers/posts.mapper';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { LikeStatusDto } from './dto/like-status.dto';
+import { GetAllCommentsDto } from '../comments/dto/get-all-comments.dto';
 
 @Injectable()
 export class PostsService {
@@ -81,6 +82,33 @@ export class PostsService {
         pageSize,
       },
       blogId,
+    );
+
+    return {
+      pagesCount: totalCount > 0 ? Math.ceil(totalCount / pageSize) : 0,
+      page: pageNumber,
+      pageSize,
+      totalCount,
+      items: items.map((item) => PostsMapper.toViewModel(item)),
+    };
+  }
+  async findAllCommentsForPost(postId: string, query: GetAllCommentsDto) {
+    const post = await this.postsRepository.findOne(postId);
+
+    if (!post) {
+      throw new NotFoundException(`No such post with id: ${postId}`);
+    }
+
+    const pageNumber = Number(query.pageNumber ?? 1);
+    const pageSize = Number(query.pageSize ?? 10);
+    const { items, totalCount } = await this.postsRepository.findAllComments(
+      {
+        sortBy: query.sortBy ?? 'createdAt',
+        sortDirection: query.sortDirection ?? 'desc',
+        pageNumber,
+        pageSize,
+      },
+      postId,
     );
 
     return {

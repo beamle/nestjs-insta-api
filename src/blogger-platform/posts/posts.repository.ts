@@ -7,6 +7,7 @@ import { GetAllPostsDto } from './dto/get-all-posts.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { toObjectId } from '../../helpers/helpers';
 import { LikeStatusDto } from './dto/like-status.dto';
+import { GetAllCommentsDto } from '../comments/dto/get-all-comments.dto';
 
 @Injectable()
 export class PostsRepository {
@@ -54,6 +55,28 @@ export class PostsRepository {
 
   async findOne(id: string) {
     return this.postModel.findById(toObjectId(id)).exec();
+  }
+
+  async findAllComments(query: GetAllCommentsDto, postId: string) {
+    const pageNumber = Number(query.pageNumber ?? 1);
+    const pageSize = Number(query.pageSize ?? 10);
+    const sortBy = query.sortBy ?? 'createdAt';
+    const sortDirection = query.sortDirection ?? 'desc';
+    const filter = { postId };
+
+    const totalCount = await this.postModel.countDocuments(filter);
+    const items = await this.postModel
+      .find(filter)
+      .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
+      .skip((pageNumber - 1) * pageSize)
+      .limit(pageSize)
+      .lean()
+      .exec();
+
+    return {
+      items,
+      totalCount,
+    };
   }
 
   async update(id: string, updatePostDto: UpdatePostDto) {

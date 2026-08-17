@@ -35,6 +35,11 @@ export class PostsController {
     return this.postsService.findOne(id);
   }
 
+  @Get(':id/comments')
+  findAllCommentsForPost(@Param('id') id: string) {
+    return this.postsService.findAllCommentsForPost(id);
+  }
+
   @Put(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async update(
