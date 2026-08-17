@@ -8,12 +8,16 @@ import { PostsMapper } from './mappers/posts.mapper';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { LikeStatusDto } from './dto/like-status.dto';
 import { GetAllCommentsDto } from '../comments/dto/get-all-comments.dto';
+import { CommentsRepository } from '../comments/comments.repository';
+import { CommentsMapper } from '../comments/mappers/comments.mapper';
+import { CreateCommentDto } from '../comments/dto/create-comment.dto';
 
 @Injectable()
 export class PostsService {
   constructor(
     private readonly postsRepository: PostsRepository,
     private readonly blogsRepository: BlogsRepository,
+    private readonly commentsRepository: CommentsRepository,
   ) {}
 
   async create(createPostDto: CreatePostDto) {
@@ -34,6 +38,28 @@ export class PostsService {
     });
 
     return PostsMapper.toViewModel(post);
+  }
+
+  async createNewCommentForPost(
+    postId: string,
+    createCommentDto: CreateCommentDto,
+  ) {
+    const post = await this.postsRepository.findOne(postId);
+
+    if (!post) {
+      throw new NotFoundException(`No such post with id: ${postId}`);
+    }
+
+    // TODO current user in controller to implement
+    const comment = await this.commentsRepository.create(
+      {
+        ...createCommentDto,
+        commentatorInfo: { userId: 'someUserId', userLogin: 'someUserLogin' }, //
+      },
+      postId,
+    );
+
+    return CommentsMapper.toViewModel(comment);
   }
 
   async findAll(query: GetAllPostsDto) {

@@ -10,16 +10,18 @@ export class CommentsRepository {
   constructor(
     @InjectModel(Comment.name)
     private readonly commentModel: Model<CommentDocument>,
-  ) {
-  }
+  ) {}
 
-  async create(comment: {
-    postId: string;
-    content: string;
-    commentatorInfo: { userId: string; userLogin: string };
-  }) {
+  async create(
+    comment: {
+      content: string;
+      commentatorInfo: { userId: string; userLogin: string };
+    },
+    postId: string,
+  ) {
     const entity = new this.commentModel({
       ...comment,
+      postId,
       createdAt: new Date(),
       likesInfo: {
         likesCount: 0,
