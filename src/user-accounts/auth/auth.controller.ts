@@ -1,4 +1,13 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
+import type { Response } from 'express';
 import { CommandBus } from '@nestjs/cqrs';
 import { RegistrationUserDto } from './dto/registration-user.dto';
 import { RegistrationConfirmationDto } from './dto/registration-confirmation.dto';
@@ -11,15 +20,30 @@ import { RegistrationConfirmationValidationPipe } from './pipes/registration-con
 import { RegistrationValidationPipe } from './pipes/registration-validation.pipe';
 import {
   ConfirmEmailCommand,
+  LoginCommand,
   PasswordRecoveryCommand,
   RegisterCommand,
   ResendConfirmationEmailCommand,
   SetNewPasswordCommand,
 } from './application/commands';
+import { LoginDto } from './dto/login.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly commandBus: CommandBus) {
+  constructor(private readonly commandBus: CommandBus) {}
+
+  @Post('login')
+  async login(
+    @Body() dto: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.commandBus.execute(new LoginCommand(dto));
+
+    res.cookie('refreshToken', result.refreshToken);
+
+    return {
+      accessToken: result.accessToken,
+    };
   }
 
   @Post('registration')
