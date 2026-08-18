@@ -73,4 +73,14 @@ export class CommentsService {
       commentUpdateDto.content,
     );
   }
+
+  async deleteComment(commentId: string) {
+    const comment = await this.commentsRepository.findOne(commentId);
+
+    if (!comment) {
+      throw new NotFoundException(`No such comment with id: ${commentId}`);
+    }
+
+    return this.commentsRepository.deleteComment(commentId);
+  }
 }

@@ -35,4 +35,9 @@ export class CommentsController {
   ) {
     return this.commentsService.updateComment(commentId, commentUpdateDto);
   }
+
+  @Delete('comments/:commentId')
+  deleteComment(@Param('commentId') commentId: string) {
+    return this.commentsService.deleteComment(commentId);
+  }
 }

@@ -77,4 +77,10 @@ export class CommentsRepository {
       )
       .exec();
   }
+
+  async deleteComment(commentId: string) {
+    return this.commentModel
+      .findByIdAndDelete(toObjectId(commentId))
+      .exec();
+  }
 }
