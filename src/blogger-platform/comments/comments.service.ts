@@ -3,14 +3,14 @@ import { CommentsRepository } from './comments.repository';
 import { GetAllCommentsDto } from './dto/get-all-comments.dto';
 import { CommentsMapper } from './mappers/comments.mapper';
 import { PostsRepository } from '../posts/posts.repository';
+import { LikeStatusDto } from '../posts/dto/like-status.dto';
 
 @Injectable()
 export class CommentsService {
   constructor(
     private readonly commentsRepository: CommentsRepository,
     private readonly postsRepository: PostsRepository,
-  ) {
-  }
+  ) {}
 
   async findAllByPost(postId: string, query: GetAllCommentsDto) {
     const post = await this.postsRepository.findOne(postId);
@@ -46,5 +46,31 @@ export class CommentsService {
     }
 
     return CommentsMapper.toViewModel(comment);
+  }
+
+  async updateCommentLike(commentId: string, likeStatusDto: LikeStatusDto) {
+    const comment = await this.commentsRepository.findOne(commentId);
+
+    if (!comment) {
+      throw new NotFoundException(`No such comment with id: ${commentId}`);
+    }
+
+    return this.commentsRepository.updateCommentLike(commentId, likeStatusDto);
+  }
+
+  async updateComment(
+    commentId: string,
+    commentUpdateDto: { content: string },
+  ) {
+    const comment = await this.commentsRepository.findOne(commentId);
+
+    if (!comment) {
+      throw new NotFoundException(`No such comment with id: ${commentId}`);
+    }
+
+    return this.commentsRepository.updateComment(
+      commentId,
+      commentUpdateDto.content,
+    );
   }
 }

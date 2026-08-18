@@ -9,23 +9,27 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { BlogsService } from './blogs.service';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
 import { BlogsQueryDto } from './dto/get-all-blogs.dto';
 import { CreatePostForBlogDto } from './dto/create-post-for-blog.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('blogs')
 export class BlogsController {
   constructor(private readonly blogsService: BlogsService) {}
 
   @Post()
+  @UseGuards(AuthGuard('jwt'))
   create(@Body() createBlogDto: CreateBlogDto) {
     return this.blogsService.create(createBlogDto);
   }
 
   @Post()
+  @UseGuards(AuthGuard('jwt'))
   createPostForBlog(
     @Param('id') id: string,
     @Body() createPostForBlogDto: CreatePostForBlogDto,
@@ -52,6 +56,7 @@ export class BlogsController {
   }
 
   @Put(':id')
+  @UseGuards(AuthGuard('jwt'))
   @HttpCode(HttpStatus.NO_CONTENT)
   async update(
     @Param('id') id: string,
@@ -61,6 +66,7 @@ export class BlogsController {
   }
 
   @Delete(':id')
+  @UseGuards(AuthGuard('jwt'))
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: string): Promise<void> {
     await this.blogsService.remove(id);

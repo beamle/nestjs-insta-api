@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { Comment, CommentDocument } from './schema/comment.schema';
 import { GetAllCommentsDto } from './dto/get-all-comments.dto';
 import { toObjectId } from '../../helpers/helpers';
+import { LikeStatusDto } from '../posts/dto/like-status.dto';
 
 @Injectable()
 export class CommentsRepository {
@@ -55,5 +56,25 @@ export class CommentsRepository {
 
   async findOne(id: string) {
     return this.commentModel.findById(toObjectId(id)).exec();
+  }
+
+  async updateCommentLike(commentId: string, likeStatusDto: LikeStatusDto) {
+    return this.commentModel
+      .findByIdAndUpdate(
+        toObjectId(commentId),
+        { $set: { 'likesInfo.myStatus': likeStatusDto.likeStatus } },
+        { new: true },
+      )
+      .exec();
+  }
+
+  async updateComment(commentId: string, content: string) {
+    return this.commentModel
+      .findByIdAndUpdate(
+        toObjectId(commentId),
+        { $set: { content } },
+        { new: true },
+      )
+      .exec();
   }
 }

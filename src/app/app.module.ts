@@ -11,7 +11,7 @@ import { AuthModule } from '../user-accounts/auth/auth.module';
 import { TestingController } from '../testing/testing.controller';
 import { PassportModule } from '@nestjs/passport';
 import { JwtService } from '../user-accounts/auth/services/JwtService';
-import { JwtStrategy } from '../user-accounts/auth/services/JwtStrategy';
+import { JwtStrategy } from '../user-accounts/auth/strategies/JwtStrategy';
 
 @Module({
   imports: [
