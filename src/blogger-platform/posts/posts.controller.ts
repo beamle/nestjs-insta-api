@@ -9,7 +9,9 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { GetAllPostsDto } from './dto/get-all-posts.dto';
@@ -56,6 +58,7 @@ export class PostsController {
   }
 
   @Put(':postId/like-status')
+  @UseGuards(AuthGuard('jwt'))
   async updateLikeStatus(
     @Param('postId') postId: string,
     @Body() dto: LikeStatusDto,

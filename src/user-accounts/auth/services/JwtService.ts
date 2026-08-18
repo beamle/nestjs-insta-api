@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { sign, verify } from 'jsonwebtoken';
 import { TokenService, TokenPayload } from '../dto/token-service.dto';
 
+// TODO, implement PASSPORT STRATEGY
 @Injectable()
 export class JwtService implements TokenService {
   private readonly accessSecret: string;
