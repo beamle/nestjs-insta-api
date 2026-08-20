@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { GetAllCommentsDto } from './dto/get-all-comments.dto';
 import { LikeStatusDto } from '../posts/dto/like-status.dto';

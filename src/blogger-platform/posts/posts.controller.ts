@@ -27,6 +27,14 @@ export class PostsController {
     return this.postsService.create(createPostDto);
   }
 
+  @Post(':id/comments')
+  createNewComment(
+    @Param('id') id: string,
+    @Body() createCommentDto: CreateCommentDto,
+  ) {
+    return this.postsService.createNewComment(id, createCommentDto);
+  }
+
   @Get()
   findAll(@Query() query: GetAllPostsDto) {
     return this.postsService.findAll(query);
@@ -38,8 +46,11 @@ export class PostsController {
   }
 
   @Get(':id/comments')
-  findAllCommentsForPost(@Param('id') id: string) {
-    return this.postsService.findAllCommentsForPost(id);
+  findAllCommentsForPost(
+    @Param('id') id: string,
+    @Query() query: GetAllPostsDto,
+  ) {
+    return this.postsService.findAllCommentsForPost(id, query);
   }
 
   @Put(':id')

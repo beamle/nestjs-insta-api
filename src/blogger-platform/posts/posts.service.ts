@@ -24,6 +24,10 @@ export class PostsService {
     return this.createForBlog(createPostDto.blogId, createPostDto);
   }
 
+  async createNewComment(postId: string, createCommentDto: CreateCommentDto) {
+    return this.createNewCommentForPost(postId, createCommentDto);
+  }
+
   async createForBlog(blogId: string, createPostDto: CreatePostForBlogDto) {
     const blog = await this.blogsRepository.findOne(blogId);
 
