@@ -17,6 +17,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { GetAllPostsDto } from './dto/get-all-posts.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { LikeStatusDto } from './dto/like-status.dto';
+import { CreateCommentDto } from '../comments/dto/create-comment.dto';
 
 @Controller('posts')
 export class PostsController {

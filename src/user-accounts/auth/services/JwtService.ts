@@ -28,7 +28,7 @@ export class JwtService implements TokenService {
   verifyAccessToken(token: string): TokenPayload {
     const payload = verify(token, this.accessSecret) as TokenPayload;
 
-    if (payload.type !== 'access') {
+    if (payload?.type !== 'access') {
       throw new UnauthorizedException();
     }
 
