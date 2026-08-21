@@ -20,7 +20,7 @@ export class PostsService {
     private readonly commentsRepository: CommentsRepository,
   ) {}
 
-  async create(createPostDto: CreatePostDto) {
+  async _create(createPostDto: CreatePostDto) {
     return this.createForBlog(createPostDto.blogId, createPostDto);
   }
 
@@ -28,7 +28,7 @@ export class PostsService {
     return this.createNewCommentForPost(postId, createCommentDto);
   }
 
-  async createForBlog(blogId: string, createPostDto: CreatePostForBlogDto) {
+  async _createForBlog(blogId: string, createPostDto: CreatePostForBlogDto) {
     const blog = await this.blogsRepository.findOne(blogId);
 
     if (!blog) {

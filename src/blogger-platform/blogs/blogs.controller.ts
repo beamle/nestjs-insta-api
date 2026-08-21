@@ -17,10 +17,15 @@ import { UpdateBlogDto } from './dto/update-blog.dto';
 import { BlogsQueryDto } from './dto/get-all-blogs.dto';
 import { CreatePostForBlogDto } from './dto/create-post-for-blog.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { CreatePostForBlogCommand } from '../posts/application/commands/create-post-for-blog.command';
+import { CommandBus } from '@nestjs/cqrs';
 
 @Controller('blogs')
 export class BlogsController {
-  constructor(private readonly blogsService: BlogsService) {}
+  constructor(
+    private readonly blogsService: BlogsService,
+    private readonly commandBus: CommandBus,
+  ) {}
 
   @Post()
   @UseGuards(AuthGuard('jwt'))
@@ -34,7 +39,9 @@ export class BlogsController {
     @Param('id') id: string,
     @Body() createPostForBlogDto: CreatePostForBlogDto,
   ) {
-    return this.blogsService.createPostForBlog(id, createPostForBlogDto);
+    return this.commandBus.execute(
+      new CreatePostForBlogCommand(id, createPostForBlogDto),
+    );
   }
 
   @Get()
