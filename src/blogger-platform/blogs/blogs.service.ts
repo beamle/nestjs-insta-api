@@ -20,10 +20,6 @@ export class BlogsService {
     return BlogMapper.toViewModel(blog);
   }
 
-  async createPostForBlog(blogId: string, createPostDto: CreatePostForBlogDto) {
-    return this.postsService.createForBlog(blogId, createPostDto);
-  }
-
   async findAll(query: BlogsQueryDto) {
     const pageNumber = Number(query.pageNumber ?? 1);
     const pageSize = Number(query.pageSize ?? 10);

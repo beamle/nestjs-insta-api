@@ -23,6 +23,7 @@ import { CreateCommentDto } from '../comments/dto/create-comment.dto';
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
+  // TODO: should i implement this?
   @Post()
   create(@Body() createPostDto: CreatePostDto) {
     return this.postsService.create(createPostDto);
