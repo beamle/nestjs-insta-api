@@ -5,11 +5,7 @@ import { UsersRepository } from '../../../users/users.repository';
 
 @CommandHandler(ConfirmEmailCommand)
 export class ConfirmEmailCommandHandler implements ICommandHandler<ConfirmEmailCommand> {
-  constructor(
-    private readonly usersRepository: UsersRepository,
-    private readonly eventBus: EventBus,
-  ) {
-  }
+  constructor(private readonly usersRepository: UsersRepository) {}
 
   async execute(command: ConfirmEmailCommand): Promise<void> {
     const user = await this.usersRepository.findByConfirmationCode(

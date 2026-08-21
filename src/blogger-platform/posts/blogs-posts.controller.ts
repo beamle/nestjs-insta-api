@@ -2,18 +2,20 @@ import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostForBlogDto } from './dto/create-post-for-blog.dto';
 import { GetAllPostsDto } from './dto/get-all-posts.dto';
+import { CreatePostForBlogCommand } from './application/commands/create-post-for-blog.command';
 
 @Controller('blogs/:blogId/posts')
 export class BlogsPostsController {
-  constructor(private readonly postsService: PostsService) {
-  }
+  constructor(
+    private readonly postsService: PostsService,
+    private readonly commandBus: CommandBus,
+  ) {}
 
-  @Post()
-  create(
+  async createPost(
     @Param('blogId') blogId: string,
-    @Body() createPostDto: CreatePostForBlogDto,
+    @Body() dto: CreatePostForBlogDto,
   ) {
-    return this.postsService.createForBlog(blogId, createPostDto);
+    return this.commandBus.execute(new CreatePostForBlogCommand(blogId, dto));
   }
 
   @Get()
