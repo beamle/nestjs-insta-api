@@ -1,31 +1,21 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Query,
-} from '@nestjs/common';
-import { CommentsService } from './comments.service';
-import { GetAllCommentsDto } from './dto/get-all-comments.dto';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { LikeStatusDto } from '../posts/dto/like-status.dto';
+import { GetCommentByIdQuery } from './application/queries/get-comment-by-id.query';
+import { UpdateCommentLikeCommand } from './application/commands/update-comment-like.command';
+import { UpdateCommentCommand } from './application/commands/update-comment.command';
+import { DeleteCommentCommand } from './application/commands/delete-comment.command';
 
 @Controller()
 export class CommentsController {
-  constructor(private readonly commentsService: CommentsService) {}
-
-  @Get('posts/:postId/comments')
-  findAllByPost(
-    @Param('postId') postId: string,
-    @Query() query: GetAllCommentsDto,
-  ) {
-    return this.commentsService.findAllByPost(postId, query);
-  }
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
 
   @Get('comments/:commentId')
   findOne(@Param('commentId') commentId: string) {
-    return this.commentsService.findOne(commentId);
+    return this.queryBus.execute(new GetCommentByIdQuery(commentId));
   }
 
   @Post('comments/:commentId/like-status')
@@ -33,7 +23,9 @@ export class CommentsController {
     @Param('commentId') commentId: string,
     @Body() likeStatusDto: LikeStatusDto,
   ) {
-    return this.commentsService.updateCommentLike(commentId, likeStatusDto);
+    return this.commandBus.execute(
+      new UpdateCommentLikeCommand(commentId, likeStatusDto),
+    );
   }
 
   @Post('comments/:commentId')
@@ -41,11 +33,13 @@ export class CommentsController {
     @Param('commentId') commentId: string,
     @Body() commentUpdateDto: { content: string },
   ) {
-    return this.commentsService.updateComment(commentId, commentUpdateDto);
+    return this.commandBus.execute(
+      new UpdateCommentCommand(commentId, commentUpdateDto.content),
+    );
   }
 
   @Delete('comments/:commentId')
   deleteComment(@Param('commentId') commentId: string) {
-    return this.commentsService.deleteComment(commentId);
+    return this.commandBus.execute(new DeleteCommentCommand(commentId));
   }
 }

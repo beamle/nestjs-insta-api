@@ -16,7 +16,7 @@ export class PostsRepository {
     private readonly postModel: Model<PostDocument>,
   ) {}
 
-  async create(createPostDto: CreatePostDto & { blogName: string }) {
+  async create(createPostDto: CreatePostDto & { blogName?: string }) {
     const post = new this.postModel({
       ...createPostDto,
       createdAt: new Date(),

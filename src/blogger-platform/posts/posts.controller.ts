@@ -11,22 +11,33 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { AuthGuard } from '@nestjs/passport';
-import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { GetAllPostsDto } from './dto/get-all-posts.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { LikeStatusDto } from './dto/like-status.dto';
 import { CreateCommentDto } from '../comments/dto/create-comment.dto';
+import { GetAllCommentsDto } from '../comments/dto/get-all-comments.dto';
+import { CreatePostCommand } from './application/commands/create-post.command';
+import { CreateCommentCommand } from './application/commands/create-comment.command';
+import { GetAllPostsQuery } from './application/queries/get-all-posts.query';
+import { GetPostByIdQuery } from './application/queries/get-post-by-id.query';
+import { GetAllCommentsForPostQuery } from './application/queries/get-all-comments-for-post.query';
+import { UpdatePostCommand } from './application/commands/update-post.command';
+import { DeletePostCommand } from './application/commands/delete-post.command';
+import { UpdateLikeStatusCommand } from './application/commands/update-like-status.command';
 
 @Controller('posts')
 export class PostsController {
-  constructor(private readonly postsService: PostsService) {}
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
 
-  // TODO: should i implement this?
   @Post()
   create(@Body() createPostDto: CreatePostDto) {
-    return this.postsService.create(createPostDto);
+    return this.commandBus.execute(new CreatePostCommand(createPostDto));
   }
 
   @Post(':id/comments')
@@ -34,25 +45,27 @@ export class PostsController {
     @Param('id') id: string,
     @Body() createCommentDto: CreateCommentDto,
   ) {
-    return this.postsService.createNewComment(id, createCommentDto);
+    return this.commandBus.execute(
+      new CreateCommentCommand(id, createCommentDto),
+    );
   }
 
   @Get()
   findAll(@Query() query: GetAllPostsDto) {
-    return this.postsService.findAll(query);
+    return this.queryBus.execute(new GetAllPostsQuery(query));
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.postsService.findOne(id);
+    return this.queryBus.execute(new GetPostByIdQuery(id));
   }
 
   @Get(':id/comments')
   findAllCommentsForPost(
     @Param('id') id: string,
-    @Query() query: GetAllPostsDto,
+    @Query() query: GetAllCommentsDto,
   ) {
-    return this.postsService.findAllCommentsForPost(id, query);
+    return this.queryBus.execute(new GetAllCommentsForPostQuery(id, query));
   }
 
   @Put(':id')
@@ -61,13 +74,13 @@ export class PostsController {
     @Param('id') id: string,
     @Body() dto: UpdatePostDto,
   ): Promise<void> {
-    await this.postsService.update(id, dto);
+    await this.commandBus.execute(new UpdatePostCommand(id, dto));
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: string): Promise<void> {
-    await this.postsService.remove(id);
+    await this.commandBus.execute(new DeletePostCommand(id));
   }
 
   @Put(':postId/like-status')
@@ -76,6 +89,6 @@ export class PostsController {
     @Param('postId') postId: string,
     @Body() dto: LikeStatusDto,
   ): Promise<void> {
-    await this.postsService.updateLikeStatus(postId, dto);
+    await this.commandBus.execute(new UpdateLikeStatusCommand(postId, dto));
   }
 }

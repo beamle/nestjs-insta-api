@@ -1,21 +1,18 @@
 import { NotFoundException } from '@nestjs/common';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { CreatePostForBlogCommand } from '../commands/create-post-for-blog.command';
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { PostsMapper } from '../../mappers/posts.mapper';
 import { BlogsRepository } from '../../../blogs/blogs.repository';
 import { PostsRepository } from '../../posts.repository';
-import { PostViewModel } from '../../view-models/post.view-model';
-import { GetAllPostsDto } from '../../dto/get-all-posts.dto';
-import { FindAllPostsByBlogCommand } from '../commands/find-all-posts-by-blog.command';
+import { FindAllPostsByBlogQuery } from '../queries/find-all-posts-by-blog.query';
 
-@CommandHandler(FindAllPostsByBlogCommand)
-export class FindAllPostsByBlogCommandHandler implements ICommandHandler<FindAllPostsByBlogCommand> {
+@QueryHandler(FindAllPostsByBlogQuery)
+export class FindAllPostsByBlogQueryHandler implements IQueryHandler<FindAllPostsByBlogQuery> {
   constructor(
     private readonly postsRepository: PostsRepository,
     private readonly blogsRepository: BlogsRepository,
   ) {}
 
-  async execute(command: FindAllPostsByBlogCommand) {
+  async execute(command: FindAllPostsByBlogQuery) {
     const { blogId, dto } = command;
     const blog = await this.blogsRepository.findOne(blogId);
 
