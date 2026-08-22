@@ -54,7 +54,6 @@ export class PostsService {
       throw new NotFoundException(`No such post with id: ${postId}`);
     }
 
-    // TODO current user in controller to implement
     const comment = await this.commentsRepository.create(
       {
         ...createCommentDto,

@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { CreatePostForBlogDto } from './dto/create-post-for-blog.dto';
-import { GetAllPostsDto } from './dto/get-all-posts.dto';
-import { CreatePostForBlogCommand } from './application/commands/create-post-for-blog.command';
+import { GetAllPostsDto } from '../posts/dto/get-all-posts.dto';
+import { CreatePostForBlogCommand } from '../posts/application/commands/create-post-for-blog.command';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { FindAllPostsByBlogQuery } from './application/queries/find-all-posts-by-blog.query';
+import { FindAllPostsByBlogQuery } from '../posts/application/queries/find-all-posts-by-blog.query';
 
 @Controller('blogs/:blogId/posts')
 export class BlogsPostsController {

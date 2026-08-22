@@ -7,6 +7,7 @@ import { UsersModule } from '../users/users.module';
 import { RegistrationEmailService } from './email/registration-email.service';
 import { RateLimitGuard } from './guards/rate-limit.guard';
 import { RateLimitService } from './guards/rate-limit.service';
+import { JwtService } from './services/JwtService';
 import {
   ConfirmEmailCommandHandler,
   LoginCommandHandler,
@@ -30,6 +31,7 @@ const HANDLERS = [
   controllers: [AuthController, LoginController],
   providers: [
     AuthService,
+    JwtService,
     RegistrationEmailService,
     RateLimitGuard,
     RateLimitService,
@@ -37,5 +39,4 @@ const HANDLERS = [
   ],
   exports: [RateLimitService],
 })
-export class AuthModule {
-}
+export class AuthModule {}

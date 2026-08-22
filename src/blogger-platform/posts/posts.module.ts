@@ -5,7 +5,6 @@ import { PostsController } from './posts.controller';
 import { PostsRepository } from './posts.repository';
 import { PostsService } from './posts.service';
 import { Post, PostSchema } from './schema/post.schema';
-import { BlogsPostsController } from './blogs-posts.controller';
 import { BlogsModule } from '../blogs/blogs.module';
 import { CommentsModule } from '../comments/comments.module';
 import {
@@ -40,7 +39,7 @@ const QUERY_HANDLERS = [
 @Module({
   imports: [
     CqrsModule,
-    BlogsModule,
+    forwardRef(() => BlogsModule),
     forwardRef(() => CommentsModule),
     MongooseModule.forFeature([
       {
@@ -49,7 +48,7 @@ const QUERY_HANDLERS = [
       },
     ]),
   ],
-  controllers: [PostsController, BlogsPostsController],
+  controllers: [PostsController],
   providers: [
     PostsService,
     PostsRepository,

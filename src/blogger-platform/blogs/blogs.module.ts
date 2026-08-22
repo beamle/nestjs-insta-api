@@ -1,8 +1,9 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CqrsModule } from '@nestjs/cqrs';
 import { BlogsService } from './blogs.service';
 import { BlogsController } from './blogs.controller';
+import { BlogsPostsController } from './blogs-posts.controller';
 import { Blog, BlogSchema } from './schema/blog.schema';
 import { BlogsRepository } from './blogs.repository';
 import { PostsModule } from '../posts/posts.module';
@@ -31,15 +32,15 @@ const QUERY_HANDLERS = [GetAllBlogsQueryHandler, GetBlogByIdQueryHandler];
         schema: BlogSchema,
       },
     ]),
-    PostsModule,
+    forwardRef(() => PostsModule),
   ],
-  controllers: [BlogsController],
+  controllers: [BlogsController, BlogsPostsController],
   providers: [
     BlogsService,
     BlogsRepository,
     ...COMMAND_HANDLERS,
     ...QUERY_HANDLERS,
   ],
-  exports: [BlogsRepository],
+  exports: [BlogsRepository, BlogsService],
 })
 export class BlogsModule {}
