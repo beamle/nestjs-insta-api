@@ -54,10 +54,16 @@ export class PostsService {
       throw new NotFoundException(`No such post with id: ${postId}`);
     }
 
+    // TODO: Get current user from request context when auth is implemented
+    const commentatorInfo = createCommentDto.commentatorInfo || {
+      userId: 'guest-user',
+      userLogin: 'guest',
+    };
+
     const comment = await this.commentsRepository.create(
       {
         ...createCommentDto,
-        commentatorInfo: { userId: 'someUserId', userLogin: 'someUserLogin' }, //
+        commentatorInfo,
       },
       postId,
     );
