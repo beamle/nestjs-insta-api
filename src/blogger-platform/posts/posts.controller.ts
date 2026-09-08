@@ -27,6 +27,9 @@ import { GetAllCommentsForPostQuery } from './application/queries/get-all-commen
 import { UpdatePostCommand } from './application/commands/update-post.command';
 import { DeletePostCommand } from './application/commands/delete-post.command';
 import { UpdateLikeStatusCommand } from './application/commands/update-like-status.command';
+import { CreatePostValidationPipe } from './pipes/create-post-validation.pipe';
+import { UpdatePostValidationPipe } from './pipes/update-post-validation.pipe';
+import { LikeStatusValidationPipe } from './pipes/like-status-validation.pipe';
 
 @Controller('posts')
 export class PostsController {
@@ -36,7 +39,7 @@ export class PostsController {
   ) {}
 
   @Post()
-  create(@Body() createPostDto: CreatePostDto) {
+  create(@Body(new CreatePostValidationPipe()) createPostDto: CreatePostDto) {
     return this.commandBus.execute(new CreatePostCommand(createPostDto));
   }
 
@@ -72,7 +75,7 @@ export class PostsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async update(
     @Param('id') id: string,
-    @Body() dto: UpdatePostDto,
+    @Body(new UpdatePostValidationPipe()) dto: UpdatePostDto,
   ): Promise<void> {
     await this.commandBus.execute(new UpdatePostCommand(id, dto));
   }
@@ -87,7 +90,7 @@ export class PostsController {
   @UseGuards(AuthGuard('jwt'))
   async updateLikeStatus(
     @Param('postId') postId: string,
-    @Body() dto: LikeStatusDto,
+    @Body(new LikeStatusValidationPipe()) dto: LikeStatusDto,
   ): Promise<void> {
     await this.commandBus.execute(new UpdateLikeStatusCommand(postId, dto));
   }

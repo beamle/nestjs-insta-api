@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { AuthController } from './auth.controller';
-import { LoginController } from './login.controller';
 import { AuthService } from './auth.service';
 import { UsersModule } from '../users/users.module';
 import { RegistrationEmailService } from './email/registration-email.service';
@@ -28,7 +27,7 @@ const HANDLERS = [
 
 @Module({
   imports: [UsersModule, CqrsModule],
-  controllers: [AuthController, LoginController],
+  controllers: [AuthController],
   providers: [
     AuthService,
     JwtService,

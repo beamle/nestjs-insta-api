@@ -14,6 +14,7 @@ import {
   GetBlogByIdQueryHandler,
   UpdateBlogCommandHandler,
 } from './application/handlers';
+import { BasicAuthGuard } from '../../user-accounts/users/guards/basic-auth.guard';
 
 const COMMAND_HANDLERS = [
   CreateBlogCommandHandler,
@@ -38,6 +39,7 @@ const QUERY_HANDLERS = [GetAllBlogsQueryHandler, GetBlogByIdQueryHandler];
   providers: [
     BlogsService,
     BlogsRepository,
+    BasicAuthGuard,
     ...COMMAND_HANDLERS,
     ...QUERY_HANDLERS,
   ],

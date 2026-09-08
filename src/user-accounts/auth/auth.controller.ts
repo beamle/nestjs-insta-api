@@ -27,19 +27,24 @@ import {
   SetNewPasswordCommand,
 } from './application/commands';
 import { LoginDto } from './dto/login.dto';
+import { LoginValidationPipe } from './pipes/login-validation.pipe';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly commandBus: CommandBus) {}
 
   @Post('login')
+  @HttpCode(HttpStatus.OK)
   async login(
-    @Body() dto: LoginDto,
+    @Body(new LoginValidationPipe()) dto: LoginDto,
     @Res({ passthrough: true }) res: Response,
   ) {
     const result = await this.commandBus.execute(new LoginCommand(dto));
 
-    res.cookie('refreshToken', result.refreshToken);
+    res.cookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: true,
+    });
 
     return {
       accessToken: result.accessToken,
