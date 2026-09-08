@@ -8,7 +8,7 @@ export class UpdateCommentLikeCommandHandler implements ICommandHandler<UpdateCo
   constructor(private readonly commentsRepository: CommentsRepository) {}
 
   async execute(command: UpdateCommentLikeCommand): Promise<void> {
-    const { commentId, dto } = command;
+    const { commentId, dto, userId } = command;
 
     const comment = await this.commentsRepository.findOne(commentId);
 
@@ -16,6 +16,6 @@ export class UpdateCommentLikeCommandHandler implements ICommandHandler<UpdateCo
       throw new NotFoundException(`No such comment with id: ${commentId}`);
     }
 
-    await this.commentsRepository.updateCommentLike(commentId, dto);
+    await this.commentsRepository.updateCommentLike(commentId, userId, dto);
   }
 }

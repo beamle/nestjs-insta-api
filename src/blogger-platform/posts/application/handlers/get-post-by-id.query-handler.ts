@@ -15,6 +15,6 @@ export class GetPostByIdQueryHandler implements IQueryHandler<GetPostByIdQuery> 
       throw new NotFoundException(`Post with id ${query.postId} not found`);
     }
 
-    return PostsMapper.toViewModel(post);
+    return PostsMapper.toViewModel(post, query.currentUserId);
   }
 }

@@ -7,6 +7,7 @@ import { PostsService } from './posts.service';
 import { Post, PostSchema } from './schema/post.schema';
 import { BlogsModule } from '../blogs/blogs.module';
 import { CommentsModule } from '../comments/comments.module';
+import { UsersModule } from '../../user-accounts/users/users.module';
 import {
   CreateCommentCommandHandler,
   CreatePostCommandHandler,
@@ -41,6 +42,7 @@ const QUERY_HANDLERS = [
     CqrsModule,
     forwardRef(() => BlogsModule),
     forwardRef(() => CommentsModule),
+    UsersModule,
     MongooseModule.forFeature([
       {
         name: Post.name,

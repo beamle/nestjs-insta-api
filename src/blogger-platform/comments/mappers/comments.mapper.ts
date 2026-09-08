@@ -2,7 +2,17 @@ import { CommentDocument } from '../schema/comment.schema';
 import { CommentViewModel } from '../view-models/comment.view-model';
 
 export class CommentsMapper {
-  static toViewModel(comment: CommentDocument): CommentViewModel {
+  static toViewModel(
+    comment: CommentDocument,
+    currentUserId?: string,
+  ): CommentViewModel {
+    const likes = comment.likes ?? [];
+
+    const currentUserLike =
+      currentUserId != null
+        ? likes.find((like) => like.userId === currentUserId)
+        : undefined;
+
     return {
       id: comment._id.toString(),
       content: comment.content,
@@ -14,7 +24,7 @@ export class CommentsMapper {
       likesInfo: {
         likesCount: comment.likesInfo.likesCount,
         dislikesCount: comment.likesInfo.dislikesCount,
-        myStatus: comment.likesInfo.myStatus,
+        myStatus: currentUserLike?.status ?? 'None',
       },
     };
   }

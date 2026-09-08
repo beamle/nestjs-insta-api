@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { CreatePostForBlogDto } from './dto/create-post-for-blog.dto';
 import { GetAllPostsDto } from './dto/get-all-posts.dto';
@@ -11,6 +15,7 @@ import { GetAllCommentsDto } from '../comments/dto/get-all-comments.dto';
 import { CommentsRepository } from '../comments/comments.repository';
 import { CommentsMapper } from '../comments/mappers/comments.mapper';
 import { CreateCommentDto } from '../comments/dto/create-comment.dto';
+import { UsersRepository } from '../../user-accounts/users/users.repository';
 
 @Injectable()
 export class PostsService {
@@ -18,14 +23,19 @@ export class PostsService {
     private readonly postsRepository: PostsRepository,
     private readonly blogsRepository: BlogsRepository,
     private readonly commentsRepository: CommentsRepository,
+    private readonly usersRepository: UsersRepository,
   ) {}
 
   async create(createPostDto: CreatePostDto) {
     return this.createForBlog(createPostDto.blogId, createPostDto);
   }
 
-  async createNewComment(postId: string, createCommentDto: CreateCommentDto) {
-    return this.createNewCommentForPost(postId, createCommentDto);
+  async createNewComment(
+    postId: string,
+    createCommentDto: CreateCommentDto,
+    userId: string,
+  ) {
+    return this.createNewCommentForPost(postId, createCommentDto, userId);
   }
 
   async createForBlog(blogId: string, createPostDto: CreatePostForBlogDto) {
@@ -47,6 +57,7 @@ export class PostsService {
   async createNewCommentForPost(
     postId: string,
     createCommentDto: CreateCommentDto,
+    userId: string,
   ) {
     const post = await this.postsRepository.findOne(postId);
 
@@ -54,16 +65,19 @@ export class PostsService {
       throw new NotFoundException(`No such post with id: ${postId}`);
     }
 
-    // TODO: Get current user from request context when auth is implemented
-    const commentatorInfo = createCommentDto.commentatorInfo || {
-      userId: 'guest-user',
-      userLogin: 'guest',
-    };
+    const user = await this.usersRepository.findOne(userId);
+
+    if (!user) {
+      throw new UnauthorizedException();
+    }
 
     const comment = await this.commentsRepository.create(
       {
         ...createCommentDto,
-        commentatorInfo,
+        commentatorInfo: {
+          userId: user._id.toString(),
+          userLogin: user.login,
+        },
       },
       postId,
     );
@@ -171,9 +185,21 @@ export class PostsService {
     }
   }
 
-  async updateLikeStatus(postId: string, likeStatusDto: LikeStatusDto) {
+  async updateLikeStatus(
+    postId: string,
+    likeStatusDto: LikeStatusDto,
+    userId: string,
+  ) {
+    const user = await this.usersRepository.findOne(userId);
+
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
     const updatedPost = await this.postsRepository.updateLikeStatus(
       postId,
+      userId,
+      user.login,
       likeStatusDto,
     );
 

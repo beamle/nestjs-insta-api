@@ -4,5 +4,6 @@ export class GetAllCommentsForPostQuery {
   constructor(
     public readonly postId: string,
     public readonly dto: GetAllCommentsDto,
+    public readonly currentUserId?: string,
   ) {}
 }

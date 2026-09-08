@@ -17,6 +17,6 @@ export class GetCommentByIdQueryHandler implements IQueryHandler<GetCommentByIdQ
       throw new NotFoundException(`No such comment with id: ${commentId}`);
     }
 
-    return CommentsMapper.toViewModel(comment);
+    return CommentsMapper.toViewModel(comment, query.currentUserId);
   }
 }

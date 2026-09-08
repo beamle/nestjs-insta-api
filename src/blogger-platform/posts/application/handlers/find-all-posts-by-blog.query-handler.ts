@@ -37,7 +37,9 @@ export class FindAllPostsByBlogQueryHandler implements IQueryHandler<FindAllPost
       page: pageNumber,
       pageSize,
       totalCount,
-      items: items.map((item) => PostsMapper.toViewModel(item)),
+      items: items.map((item) =>
+        PostsMapper.toViewModel(item, command.currentUserId),
+      ),
     };
   }
 }

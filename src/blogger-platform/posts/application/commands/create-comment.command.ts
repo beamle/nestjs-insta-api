@@ -4,5 +4,6 @@ export class CreateCommentCommand {
   constructor(
     public readonly postId: string,
     public readonly dto: CreateCommentDto,
+    public readonly userId: string,
   ) {}
 }

@@ -91,13 +91,82 @@ export class PostsRepository {
     return this.postModel.deleteOne({ _id: toObjectId(id) }).exec();
   }
 
-  async updateLikeStatus(postId: string, likeStatusDto: LikeStatusDto) {
-    return this.postModel
-      .findByIdAndUpdate(
-        toObjectId(postId),
-        { $set: { 'extendedLikesInfo.myStatus': likeStatusDto.likeStatus } },
-        { returnDocument: 'after' },
-      )
-      .exec();
+  async updateLikeStatus(
+    postId: string,
+    userId: string,
+    userLogin: string,
+    likeStatusDto: LikeStatusDto,
+  ) {
+    const post = await this.postModel.findById(toObjectId(postId)).exec();
+
+    if (!post) {
+      return null;
+    }
+
+    if (!Array.isArray(post.likes)) {
+      post.likes = [];
+    }
+
+    const previousLike = post.likes.find((like) => like.userId === userId);
+    const previousStatus = previousLike?.status ?? 'None';
+    const nextStatus = likeStatusDto.likeStatus;
+
+    if (previousStatus === nextStatus) {
+      return post;
+    }
+
+    if (previousStatus === 'Like') {
+      post.extendedLikesInfo.likesCount = Math.max(
+        0,
+        post.extendedLikesInfo.likesCount - 1,
+      );
+    }
+
+    if (previousStatus === 'Dislike') {
+      post.extendedLikesInfo.dislikesCount = Math.max(
+        0,
+        post.extendedLikesInfo.dislikesCount - 1,
+      );
+    }
+
+    if (nextStatus === 'None') {
+      post.likes = post.likes.filter((like) => like.userId !== userId);
+    } else {
+      const now = new Date();
+
+      if (previousLike) {
+        previousLike.status = nextStatus;
+        previousLike.login = userLogin;
+        previousLike.addedAt = now;
+      } else {
+        post.likes.push({
+          userId,
+          login: userLogin,
+          status: nextStatus,
+          addedAt: now,
+        });
+      }
+
+      if (nextStatus === 'Like') {
+        post.extendedLikesInfo.likesCount += 1;
+      }
+
+      if (nextStatus === 'Dislike') {
+        post.extendedLikesInfo.dislikesCount += 1;
+      }
+    }
+
+    post.extendedLikesInfo.myStatus = 'None';
+    post.extendedLikesInfo.newestLikes = post.likes
+      .filter((like) => like.status === 'Like')
+      .sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime())
+      .slice(0, 3)
+      .map((like) => ({
+        addedAt: like.addedAt,
+        userId: like.userId,
+        login: like.login,
+      }));
+
+    return post.save();
   }
 }

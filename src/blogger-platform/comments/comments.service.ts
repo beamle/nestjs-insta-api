@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CommentsRepository } from './comments.repository';
 import { GetAllCommentsDto } from './dto/get-all-comments.dto';
 import { CommentsMapper } from './mappers/comments.mapper';
@@ -48,14 +52,26 @@ export class CommentsService {
     return CommentsMapper.toViewModel(comment);
   }
 
-  async updateCommentLike(commentId: string, likeStatusDto: LikeStatusDto) {
+  async updateCommentLike(
+    commentId: string,
+    likeStatusDto: LikeStatusDto,
+    userId: string,
+  ) {
     const comment = await this.commentsRepository.findOne(commentId);
 
     if (!comment) {
       throw new NotFoundException(`No such comment with id: ${commentId}`);
     }
 
-    return this.commentsRepository.updateCommentLike(commentId, likeStatusDto);
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    return this.commentsRepository.updateCommentLike(
+      commentId,
+      userId,
+      likeStatusDto,
+    );
   }
 
   async updateComment(

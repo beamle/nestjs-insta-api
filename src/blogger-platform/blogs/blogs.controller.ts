@@ -9,9 +9,11 @@ import {
   Post,
   Put,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { verify } from 'jsonwebtoken';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
 import { BlogsQueryDto } from './dto/get-all-blogs.dto';
@@ -33,6 +35,19 @@ export class BlogsController {
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
   ) {}
+
+  @Get(':blogId/posts')
+  findAllPostsForBlog(
+    @Param('blogId') blogId: string,
+    @Query() query: BlogsQueryDto & { blogId: string },
+    @Req() request: any,
+  ) {
+    const currentUserId = this.getOptionalUserIdFromRequest(request);
+
+    return this.queryBus.execute(
+      new FindAllPostsByBlogQuery(blogId, query, currentUserId),
+    );
+  }
 
   @Post()
   @UseGuards(BasicAuthGuard)
@@ -62,12 +77,29 @@ export class BlogsController {
     return this.queryBus.execute(new GetBlogByIdQuery(id));
   }
 
-  @Get(':blogId/posts')
-  findAllPostsForBlog(
-    @Param('blogId') blogId: string,
-    @Query() query: BlogsQueryDto & { blogId: string },
-  ) {
-    return this.queryBus.execute(new FindAllPostsByBlogQuery(blogId, query));
+  private getOptionalUserIdFromRequest(request: any): string | undefined {
+    const authHeader = request.headers.authorization;
+
+    if (!authHeader?.startsWith('Bearer ')) {
+      return undefined;
+    }
+
+    const token = authHeader.slice('Bearer '.length).trim();
+
+    try {
+      const payload = verify(
+        token,
+        process.env.JWT_ACCESS_SECRET ?? 'access-secret',
+      ) as { userId?: string; type?: string };
+
+      if (payload.type !== 'access' || typeof payload.userId !== 'string') {
+        return undefined;
+      }
+
+      return payload.userId;
+    } catch {
+      return undefined;
+    }
   }
 
   @Put(':id')

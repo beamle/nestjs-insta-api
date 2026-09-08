@@ -4,5 +4,6 @@ export class FindAllPostsByBlogQuery {
   constructor(
     public readonly blogId: string,
     public readonly dto: GetAllPostsDto,
+    public readonly currentUserId?: string,
   ) {}
 }

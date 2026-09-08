@@ -2,14 +2,16 @@ import { CreateCommentCommand } from '../commands/create-comment.command';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PostsRepository } from '../../posts.repository';
 import { CommentsRepository } from '../../../comments/comments.repository';
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CommentsMapper } from '../../../comments/mappers/comments.mapper';
+import { UsersRepository } from '../../../../user-accounts/users/users.repository';
 
 @CommandHandler(CreateCommentCommand)
 export class CreateCommentCommandHandler implements ICommandHandler<CreateCommentCommand> {
   constructor(
     private readonly postsRepository: PostsRepository,
     private readonly commentsRepository: CommentsRepository,
+    private readonly usersRepository: UsersRepository,
   ) {}
 
   async execute(command: CreateCommentCommand) {
@@ -19,10 +21,15 @@ export class CreateCommentCommandHandler implements ICommandHandler<CreateCommen
       throw new NotFoundException(`No such post with id: ${command.postId}`);
     }
 
-    // TODO: Get current user from request context when auth is implemented
-    const commentatorInfo = command.dto.commentatorInfo || {
-      userId: 'guest-user',
-      userLogin: 'guest',
+    const user = await this.usersRepository.findOne(command.userId);
+
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    const commentatorInfo = {
+      userId: user._id.toString(),
+      userLogin: user.login,
     };
 
     const comment = await this.commentsRepository.create(

@@ -4,5 +4,6 @@ export class UpdateCommentLikeCommand {
   constructor(
     public readonly commentId: string,
     public readonly dto: LikeStatusDto,
+    public readonly userId: string,
   ) {}
 }

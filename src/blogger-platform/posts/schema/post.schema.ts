@@ -16,6 +16,23 @@ export class NewestLike {
 export const NewestLikeSchema = SchemaFactory.createForClass(NewestLike);
 
 @Schema({ _id: false })
+export class PostLike {
+  @Prop({ required: true })
+  userId: string;
+
+  @Prop({ required: true })
+  login: string;
+
+  @Prop({ required: true })
+  status: 'Like' | 'Dislike';
+
+  @Prop({ required: true })
+  addedAt: Date;
+}
+
+export const PostLikeSchema = SchemaFactory.createForClass(PostLike);
+
+@Schema({ _id: false })
 export class ExtendedLikesInfo {
   @Prop({ default: 0 })
   likesCount: number;
@@ -63,6 +80,9 @@ export class Post {
     }),
   })
   extendedLikesInfo: ExtendedLikesInfo;
+
+  @Prop({ type: [PostLikeSchema], default: [] })
+  likes: PostLike[];
 }
 
 export type PostDocument = HydratedDocument<Post>;

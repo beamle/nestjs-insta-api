@@ -58,14 +58,69 @@ export class CommentsRepository {
     return this.commentModel.findById(toObjectId(id)).exec();
   }
 
-  async updateCommentLike(commentId: string, likeStatusDto: LikeStatusDto) {
-    return this.commentModel
-      .findByIdAndUpdate(
-        toObjectId(commentId),
-        { $set: { 'likesInfo.myStatus': likeStatusDto.likeStatus } },
-        { new: true },
-      )
+  async updateCommentLike(
+    commentId: string,
+    userId: string,
+    likeStatusDto: LikeStatusDto,
+  ) {
+    const comment = await this.commentModel
+      .findById(toObjectId(commentId))
       .exec();
+
+    if (!comment) {
+      return null;
+    }
+
+    if (!Array.isArray(comment.likes)) {
+      comment.likes = [];
+    }
+
+    const previousLike = comment.likes.find((like) => like.userId === userId);
+    const previousStatus = previousLike?.status ?? 'None';
+    const nextStatus = likeStatusDto.likeStatus;
+
+    if (previousStatus === nextStatus) {
+      return comment;
+    }
+
+    if (previousStatus === 'Like') {
+      comment.likesInfo.likesCount = Math.max(
+        0,
+        comment.likesInfo.likesCount - 1,
+      );
+    }
+
+    if (previousStatus === 'Dislike') {
+      comment.likesInfo.dislikesCount = Math.max(
+        0,
+        comment.likesInfo.dislikesCount - 1,
+      );
+    }
+
+    if (nextStatus === 'None') {
+      comment.likes = comment.likes.filter((like) => like.userId !== userId);
+    } else {
+      const now = new Date();
+
+      if (previousLike) {
+        previousLike.status = nextStatus;
+        previousLike.addedAt = now;
+      } else {
+        comment.likes.push({ userId, status: nextStatus, addedAt: now });
+      }
+
+      if (nextStatus === 'Like') {
+        comment.likesInfo.likesCount += 1;
+      }
+
+      if (nextStatus === 'Dislike') {
+        comment.likesInfo.dislikesCount += 1;
+      }
+    }
+
+    comment.likesInfo.myStatus = 'None';
+
+    return comment.save();
   }
 
   async updateComment(commentId: string, content: string) {
@@ -79,8 +134,6 @@ export class CommentsRepository {
   }
 
   async deleteComment(commentId: string) {
-    return this.commentModel
-      .findByIdAndDelete(toObjectId(commentId))
-      .exec();
+    return this.commentModel.findByIdAndDelete(toObjectId(commentId)).exec();
   }
 }

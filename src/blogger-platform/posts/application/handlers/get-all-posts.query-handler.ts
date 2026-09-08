@@ -9,7 +9,7 @@ export class GetAllPostsQueryHandler implements IQueryHandler<GetAllPostsQuery> 
 
   async execute(query: GetAllPostsQuery) {
     const { dto } = query;
-    
+
     const pageNumber = Number(dto.pageNumber ?? 1);
     const pageSize = Number(dto.pageSize ?? 10);
     const { items, totalCount } = await this.postsRepository.findAll({
@@ -24,7 +24,9 @@ export class GetAllPostsQueryHandler implements IQueryHandler<GetAllPostsQuery> 
       page: pageNumber,
       pageSize,
       totalCount,
-      items: items.map((item) => PostsMapper.toViewModel(item)),
+      items: items.map((item) =>
+        PostsMapper.toViewModel(item, query.currentUserId),
+      ),
     };
   }
 }
